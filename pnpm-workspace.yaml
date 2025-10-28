@@ -1,0 +1,14 @@
+# PUIUX Click - pnpm Workspace Configuration
+
+packages:
+  # Main applications
+  - 'apps/*'
+
+  # Shared packages
+  - 'packages/*'
+
+  # Exclude common directories
+  - '!**/node_modules/**'
+  - '!**/dist/**'
+  - '!**/.next/**'
+  - '!**/build/**'
