@@ -267,3 +267,5 @@ docs/.vitepress/cache/
 !.github/workflows/
 !.github/ISSUE_TEMPLATE/
 !.github/PULL_REQUEST_TEMPLATE.md
+# CI/CD workflows (commit manually due to GitHub App permissions)
+.github/workflows/
