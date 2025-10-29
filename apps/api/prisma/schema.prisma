@@ -1,0 +1,169 @@
+// Prisma Schema for PUIUX Click
+// Multi-tenancy: Application-level isolation with organizationId
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// Core Models
+// ============================================================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  avatar    String?
+  role      UserRole @default(USER)
+
+  emailVerified    Boolean   @default(false)
+  emailVerifiedAt  DateTime?
+
+  // Multi-tenancy
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Relations
+  sites            Site[]
+  sessions         Session[]
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("users")
+}
+
+model Organization {
+  id          String @id @default(uuid())
+  name        String
+  slug        String @unique
+
+  // Plan & Limits
+  plan        Plan   @default(FREE)
+
+  // Limits (enforced at application level)
+  maxSites    Int    @default(1)  // FREE: 1, STARTER: 5, PRO: 20, BUSINESS: unlimited
+  maxStorage  Int    @default(100) // MB
+
+  // Relations
+  users       User[]
+  sites       Site[]
+
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@map("organizations")
+}
+
+model Site {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique // username.puiuxclick.com
+
+  // Multi-tenancy (CRITICAL!)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  userId         String
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Site Details
+  industry       Industry
+  templateId     String
+
+  // Business Info
+  businessName   String
+  description    String?
+  logo           String?
+
+  // Contact Info
+  phone          String?
+  email          String?
+  address        String?
+
+  // Colors & Design
+  colorPalette   Json  // { primary: '#...', secondary: '#...', ... }
+
+  // Content (cached template-based)
+  pages          Json  // Array of page objects
+
+  // Publishing
+  status         SiteStatus @default(DRAFT)
+  publishedAt    DateTime?
+  publishUrl     String?    // https://username.puiuxclick.com
+
+  // Analytics
+  viewCount      Int        @default(0)
+  lastViewedAt   DateTime?
+
+  // Metadata
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([slug])
+  @@index([status])
+  @@map("sites")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  token     String   @unique
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([token])
+  @@map("sessions")
+}
+
+// ============================================================================
+// Enums
+// ============================================================================
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Plan {
+  FREE      // 1 site, subdomain only, 100MB storage
+  STARTER   // 5 sites, custom domain, 1GB storage
+  PRO       // 20 sites, priority support, 5GB storage
+  BUSINESS  // Unlimited sites, white-label, 50GB storage
+}
+
+enum Industry {
+  RESTAURANT
+  DENTAL
+  PORTFOLIO
+  BUSINESS
+  STORE
+}
+
+enum SiteStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}

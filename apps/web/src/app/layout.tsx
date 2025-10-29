@@ -1,0 +1,121 @@
+import type { Metadata } from 'next';
+import { Inter, Tajawal } from 'next/font/google';
+import { ThemeProvider } from '@/components/providers/theme-provider';
+import { Toaster } from 'sonner';
+import '@/styles/globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const tajawal = Tajawal({
+  subsets: ['arabic'],
+  weight: ['400', '500', '700', '800'],
+  variable: '--font-tajawal',
+  display: 'swap',
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: 'PUIUX Click - بناء مواقع احترافية في دقائق',
+    template: '%s | PUIUX Click',
+  },
+  description:
+    'بناء مواقع احترافية متعددة اللغات في 2-5 دقائق باستخدام الذكاء الاصطناعي',
+  keywords: [
+    'website builder',
+    'AI website',
+    'Arabic websites',
+    'بناء مواقع',
+    'موقع إلكتروني',
+    'ذكاء اصطناعي',
+  ],
+  authors: [{ name: 'PUIUX', url: 'https://puiux.com' }],
+  creator: 'PUIUX',
+  publisher: 'PUIUX',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  alternates: {
+    canonical: '/',
+    languages: {
+      ar: '/ar',
+      en: '/en',
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ar_SA',
+    alternateLocale: 'en_US',
+    url: '/',
+    siteName: 'PUIUX Click',
+    title: 'PUIUX Click - بناء مواقع احترافية في دقائق',
+    description:
+      'بناء مواقع احترافية متعددة اللغات في 2-5 دقائق باستخدام الذكاء الاصطناعي',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'PUIUX Click',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PUIUX Click - بناء مواقع احترافية في دقائق',
+    description:
+      'بناء مواقع احترافية متعددة اللغات في 2-5 دقائق باستخدام الذكاء الاصطناعي',
+    images: ['/og-image.png'],
+    creator: '@puiux',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
+};
+
+export default function RootLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { locale?: string };
+}) {
+  const locale = params?.locale || 'ar';
+  const dir = locale === 'ar' ? 'rtl' : 'ltr';
+
+  return (
+    <html lang={locale} dir={dir} suppressHydrationWarning>
+      <body className={`${inter.variable} ${tajawal.variable} antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster position="top-center" richColors />
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
