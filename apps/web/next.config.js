@@ -2,6 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  transpilePackages: [
+    '@puiux/config',
+    '@puiux/types',
+    '@puiux/utils',
+    '@puiux/ui',
+    '@puiux/ai',
+  ],
 
   // Enable experimental features
   experimental: {

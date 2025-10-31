@@ -448,7 +448,7 @@ ${sectionsList}
   /**
    * Get sections structure based on industry
    */
-  private getSectionsForIndustry(industry: string, businessName: string): Array<{
+  private getSectionsForIndustry(industry: string, _businessName: string): Array<{
     id: string;
     type: string;
     title: string;

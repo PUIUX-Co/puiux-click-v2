@@ -1,7 +1,6 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
   ForbiddenException,
   ConflictException,
   Logger,
@@ -11,7 +10,8 @@ import { CreateSiteDto, UpdateSiteDto, SiteResponseDto } from './dto';
 import { Industry, SiteStatus, Site } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { AiService } from '../ai/ai.service';
-import { GeneratedWebsite, GrapesJSPage } from '../ai/dto';
+import { GeneratedWebsite } from '../ai/dto';
+import { Prisma } from '@prisma/client';
 
 /**
  * Sites Service
@@ -76,13 +76,16 @@ export class SitesService {
           phone: createSiteDto.phone,
           email: createSiteDto.email,
           address: createSiteDto.address,
-          colorPalette: createSiteDto.colorPalette,
+          colorPalette: createSiteDto.colorPalette as unknown as Prisma.InputJsonValue,
           pages: {}, // Empty initially
           publishUrl: `https://${slug}.puiuxclick.com`,
         },
       });
     } catch (error) {
-      if (error.code === 'P2002') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
         throw new ConflictException('الموقع بهذا الاسم موجود مسبقاً');
       }
       throw error;
@@ -195,9 +198,34 @@ export class SitesService {
     // Verify ownership
     await this.findOne(id, organizationId);
 
+    const data: Prisma.SiteUpdateInput = {
+      name: updateSiteDto.name,
+      industry: updateSiteDto.industry,
+      businessName: updateSiteDto.businessName,
+      description: updateSiteDto.description,
+      phone: updateSiteDto.phone,
+      email: updateSiteDto.email,
+      address: updateSiteDto.address,
+      templateId: updateSiteDto.templateId,
+      status: updateSiteDto.status,
+      colorPalette:
+        (updateSiteDto as any).colorPalette !== undefined
+          ? (updateSiteDto as any).colorPalette
+          : undefined,
+    };
+
+    // Remove undefined fields to prevent overwriting with null
+    Object.keys(data).forEach((key) =>
+      (data as any)[key] === undefined ? delete (data as any)[key] : null,
+    );
+
+    if (data.colorPalette !== undefined) {
+      data.colorPalette = data.colorPalette as unknown as Prisma.InputJsonValue;
+    }
+
     const site = await this.prisma.site.update({
       where: { id },
-      data: updateSiteDto,
+      data,
     });
 
     return this.toResponseDto(site);
