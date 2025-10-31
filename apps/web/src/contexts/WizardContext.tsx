@@ -114,8 +114,8 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
       setData(initialData);
       setCurrentStep(0);
 
-      // Redirect to dashboard
-      router.push('/dashboard');
+      // Redirect to editor to start editing the AI-generated site
+      router.push(`/sites/${site.id}/edit`);
     } catch (error: any) {
       console.error('Failed to create site:', error);
       const message = error.response?.data?.message || 'حدث خطأ أثناء إنشاء الموقع. يرجى المحاولة مرة أخرى.';
