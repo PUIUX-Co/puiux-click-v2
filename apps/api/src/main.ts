@@ -60,20 +60,20 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   // ============================================================================
-  // API Versioning
-  // ============================================================================
-
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: '1',
-    prefix: 'api/v',
-  });
-
-  // ============================================================================
   // Global Prefix
   // ============================================================================
 
   app.setGlobalPrefix('api');
+
+  // ============================================================================
+  // API Versioning (Disabled for simplicity)
+  // ============================================================================
+
+  // app.enableVersioning({
+  //   type: VersioningType.URI,
+  //   defaultVersion: '1',
+  //   prefix: 'v',
+  // });
 
   // ============================================================================
   // Swagger Documentation
