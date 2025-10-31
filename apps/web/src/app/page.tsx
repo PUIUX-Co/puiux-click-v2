@@ -1,8 +1,40 @@
 import Link from 'next/link';
-import { brandConfig } from '@puiux/config';
+
+// Industries configuration
+const industries = [
+  {
+    id: 'RESTAURANT',
+    name: 'مطاعم ومقاهي',
+    icon: '🍽️',
+    description: 'مواقع احترافية للمطاعم والمقاهي',
+  },
+  {
+    id: 'DENTAL',
+    name: 'عيادات أسنان',
+    icon: '🦷',
+    description: 'مواقع متخصصة لعيادات الأسنان',
+  },
+  {
+    id: 'PORTFOLIO',
+    name: 'معرض أعمال',
+    icon: '🎨',
+    description: 'مواقع شخصية لعرض الأعمال',
+  },
+  {
+    id: 'BUSINESS',
+    name: 'أعمال تجارية',
+    icon: '💼',
+    description: 'مواقع للشركات والأعمال التجارية',
+  },
+  {
+    id: 'STORE',
+    name: 'متاجر إلكترونية',
+    icon: '🛍️',
+    description: 'متاجر لبيع المنتجات',
+  },
+];
 
 export default function HomePage() {
-  const industries = brandConfig.features.industries;
 
   return (
     <div className="flex min-h-screen flex-col">
