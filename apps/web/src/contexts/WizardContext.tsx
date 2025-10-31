@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { WizardData, WizardContextType, IndustryType } from '@/types/wizard';
+import { createSite } from '@/lib/api/sites';
 
 const WizardContext = createContext<WizardContextType | undefined>(undefined);
 
@@ -79,28 +80,47 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
 
   // Generate site
   const generateSite = useCallback(async () => {
+    // Validate required fields
+    if (!data.industry || !data.businessName || !data.email) {
+      toast.error('يرجى ملء جميع الحقول المطلوبة', {
+        icon: '⚠️',
+        duration: 3000,
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // TODO: Call API to generate site
-      // const response = await fetch('/api/sites', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Create site via API
+      const site = await createSite({
+        name: data.businessName,
+        industry: data.industry,
+        businessName: data.businessName,
+        description: data.description,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        colorPalette: data.colorPalette,
+        templateId: data.templateId,
+      });
 
       toast.success('تم إنشاء موقعك بنجاح! 🎉', {
         icon: '✨',
         duration: 4000,
       });
 
+      // Reset wizard data
+      setData(initialData);
+      setCurrentStep(0);
+
       // Redirect to dashboard
       router.push('/dashboard');
-    } catch (error) {
-      toast.error('حدث خطأ أثناء إنشاء الموقع. يرجى المحاولة مرة أخرى.', {
+    } catch (error: any) {
+      console.error('Failed to create site:', error);
+      const message = error.response?.data?.message || 'حدث خطأ أثناء إنشاء الموقع. يرجى المحاولة مرة أخرى.';
+
+      toast.error(message, {
         icon: '❌',
         duration: 4000,
       });

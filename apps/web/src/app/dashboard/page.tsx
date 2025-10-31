@@ -1,69 +1,112 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { getSites, getSiteStats, type Site, type SiteStats } from '@/lib/api/sites';
 import {
+  Plus,
+  Globe,
+  TrendingUp,
+  FileText,
+  Eye,
+  Loader2,
+  Sparkles,
   LogOut,
   User,
-  Building2,
-  Crown,
-  Sparkles,
-  Settings,
-  Plus,
-  LayoutGrid,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import SiteCard from '@/components/dashboard/SiteCard';
+import EmptyState from '@/components/dashboard/EmptyState';
 
 export default function DashboardPage() {
-  const { user, logout, loading, isAuthenticated } = useAuth();
+  const { user, logout, loading: authLoading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const [sites, setSites] = useState<Site[]>([]);
+  const [stats, setStats] = useState<SiteStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [loading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
 
-  if (loading || !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
-          <p className="text-muted-foreground">جاري التحميل...</p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadData();
+    }
+  }, [isAuthenticated]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [sitesData, statsData] = await Promise.all([
+        getSites(),
+        getSiteStats(),
+      ]);
+      setSites(sitesData);
+      setStats(statsData);
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSiteDeleted = (siteId: string) => {
+    setSites((prev) => prev.filter((site) => site.id !== siteId));
+    loadData(); // Reload stats
+  };
+
+  const handleSiteUpdated = () => {
+    loadData(); // Reload all data
+  };
 
   const handleLogout = async () => {
     await logout();
   };
 
+  if (authLoading || loading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground">جاري التحميل...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <header className="border-b border-border/40 bg-background/95 backdrop-blur-xl sticky top-0 z-40">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center gap-2">
+            <Link href="/dashboard" className="flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-lg shadow-primary/25">
                 <Sparkles className="h-5 w-5" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              <span className="hidden sm:inline text-xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                 PUIUX Click
               </span>
-            </div>
+            </Link>
 
             {/* User Menu */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-background/50 px-4 py-2">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-border/50 bg-background/50 px-2 sm:px-4 py-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <User className="h-4 w-4" />
                 </div>
-                <div className="text-right">
+                <div className="hidden sm:block text-right">
                   <p className="text-sm font-medium">{user.name}</p>
                   <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
@@ -74,6 +117,7 @@ export default function DashboardPage() {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleLogout}
                 className="rounded-xl border border-border/50 bg-background/50 p-2 text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                aria-label="تسجيل الخروج"
               >
                 <LogOut className="h-5 w-5" />
               </motion.button>
@@ -82,182 +126,144 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Welcome Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <h1 className="text-3xl font-bold mb-2">مرحباً، {user.name}! 👋</h1>
-          <p className="text-muted-foreground">ابدأ في بناء موقعك الاحترافي الآن</p>
-        </motion.div>
+      {/* Hero Section */}
+      <div className="border-b border-border/40 bg-gradient-to-br from-primary/5 via-purple-500/5 to-transparent">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <h1 className="text-3xl sm:text-4xl font-bold">
+                مرحباً، {user.name} 👋
+              </h1>
+              <p className="mt-2 text-muted-foreground">
+                إدارة مواقعك بسهولة واحترافية
+              </p>
+            </motion.div>
 
-        {/* Stats Grid */}
-        <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            icon={<Building2 className="h-6 w-6" />}
-            label="المنظمة"
-            value={user.organizationId.slice(0, 8) + '...'}
-            delay={0.1}
-          />
-          <StatCard
-            icon={<Crown className="h-6 w-6" />}
-            label="الدور"
-            value={user.role === 'USER' ? 'مستخدم' : user.role}
-            delay={0.2}
-          />
-          <StatCard
-            icon={<LayoutGrid className="h-6 w-6" />}
-            label="المواقع"
-            value="0"
-            delay={0.3}
-          />
-          <StatCard
-            icon={<Settings className="h-6 w-6" />}
-            label="الحالة"
-            value="نشط"
-            delay={0.4}
-            highlight
-          />
+            <Link href="/wizard">
+              <motion.button
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="group flex h-12 sm:h-14 items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary to-primary/80 px-6 sm:px-8 font-medium text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+              >
+                <Plus className="h-5 w-5" />
+                <span>إنشاء موقع جديد</span>
+                <Sparkles className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+              </motion.button>
+            </Link>
+          </div>
         </div>
+      </div>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="rounded-3xl border border-border/50 bg-background/50 p-8 shadow-xl backdrop-blur-xl"
-        >
-          <h2 className="text-2xl font-bold mb-6">إجراءات سريعة</h2>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Stats Cards */}
+        {stats && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 grid gap-4 grid-cols-2 lg:grid-cols-4"
+          >
+            <StatCard
+              icon={<Globe className="h-5 w-5 sm:h-6 sm:w-6" />}
+              label="إجمالي المواقع"
+              value={stats.total}
+              color="from-blue-500 to-cyan-500"
+            />
+            <StatCard
+              icon={<TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />}
+              label="منشورة"
+              value={stats.published}
+              color="from-green-500 to-emerald-500"
+            />
+            <StatCard
+              icon={<FileText className="h-5 w-5 sm:h-6 sm:w-6" />}
+              label="مسودات"
+              value={stats.draft}
+              color="from-yellow-500 to-orange-500"
+            />
+            <StatCard
+              icon={<Eye className="h-5 w-5 sm:h-6 sm:w-6" />}
+              label="المشاهدات"
+              value={stats.totalViews}
+              color="from-purple-500 to-pink-500"
+            />
+          </motion.div>
+        )}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <ActionCard
-              icon={<Plus className="h-6 w-6" />}
-              title="إنشاء موقع جديد"
-              description="ابدأ في بناء موقعك الآن"
-              gradient="from-primary to-purple-600"
-            />
-            <ActionCard
-              icon={<LayoutGrid className="h-6 w-6" />}
-              title="مواقعي"
-              description="عرض جميع مواقعك"
-              gradient="from-blue-500 to-cyan-500"
-            />
-            <ActionCard
-              icon={<Settings className="h-6 w-6" />}
-              title="الإعدادات"
-              description="إدارة حسابك"
-              gradient="from-orange-500 to-red-500"
-            />
+        {/* Sites Grid */}
+        {sites.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div>
+            <h2 className="mb-6 text-lg sm:text-xl font-semibold">
+              مواقعك ({sites.length})
+            </h2>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              <AnimatePresence mode="popLayout">
+                {sites.map((site, index) => (
+                  <motion.div
+                    key={site.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    <SiteCard
+                      site={site}
+                      onDeleted={handleSiteDeleted}
+                      onUpdated={handleSiteUpdated}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
           </div>
-        </motion.div>
-
-        {/* User Info Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="mt-8 rounded-3xl border border-border/50 bg-background/50 p-8 shadow-xl backdrop-blur-xl"
-        >
-          <h2 className="text-2xl font-bold mb-6">معلومات الحساب</h2>
-
-          <div className="space-y-4">
-            <InfoRow label="المعرف" value={user.id} />
-            <InfoRow label="الاسم" value={user.name} />
-            <InfoRow label="البريد الإلكتروني" value={user.email} />
-            <InfoRow label="الدور" value={user.role} />
-            <InfoRow label="معرف المنظمة" value={user.organizationId} />
-          </div>
-        </motion.div>
-      </main>
+        )}
+      </div>
     </div>
   );
 }
 
-// Stat Card Component
 function StatCard({
   icon,
   label,
   value,
-  delay,
-  highlight = false,
+  color,
 }: {
   icon: React.ReactNode;
   label: string;
-  value: string;
-  delay: number;
-  highlight?: boolean;
+  value: number;
+  color: string;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-      whileHover={{ scale: 1.02 }}
-      className={`rounded-2xl border ${
-        highlight
-          ? 'border-primary/50 bg-primary/5'
-          : 'border-border/50 bg-background/50'
-      } p-6 shadow-lg backdrop-blur-xl transition-all hover:shadow-xl`}
+      whileHover={{ y: -4 }}
+      className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-border/50 bg-background/50 p-4 sm:p-6 backdrop-blur-sm transition-shadow hover:shadow-lg"
     >
-      <div
-        className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${
-          highlight
-            ? 'bg-primary/20 text-primary'
-            : 'bg-muted text-muted-foreground'
-        }`}
-      >
-        {icon}
+      <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3 sm:gap-0">
+        <div className="flex-1 w-full">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">{label}</p>
+          <p className="text-2xl sm:text-3xl font-bold">{value.toLocaleString('ar-SA')}</p>
+        </div>
+        <div
+          className={`flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg sm:rounded-xl bg-gradient-to-br ${color} text-white shadow-lg`}
+        >
+          {icon}
+        </div>
       </div>
-      <p className="text-sm text-muted-foreground mb-1">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
-    </motion.div>
-  );
-}
 
-// Action Card Component
-function ActionCard({
-  icon,
-  title,
-  description,
-  gradient,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  gradient: string;
-}) {
-  return (
-    <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      className="group relative overflow-hidden rounded-2xl border border-border/50 bg-background/50 p-6 text-right transition-all hover:border-primary/50 hover:shadow-lg"
-    >
+      {/* Gradient overlay */}
       <div
-        className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg`}
-      >
-        {icon}
-      </div>
-      <h3 className="text-lg font-bold mb-1">{title}</h3>
-      <p className="text-sm text-muted-foreground">{description}</p>
-
-      {/* Hover gradient effect */}
-      <div
-        className={`absolute inset-0 -z-10 bg-gradient-to-br ${gradient} opacity-0 transition-opacity group-hover:opacity-5`}
+        className={`absolute inset-0 -z-10 bg-gradient-to-br ${color} opacity-[0.03]`}
       />
-    </motion.button>
-  );
-}
-
-// Info Row Component
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-border/50 bg-background/30 p-4">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
-      <span className="text-sm font-mono">{value}</span>
-    </div>
+    </motion.div>
   );
 }
