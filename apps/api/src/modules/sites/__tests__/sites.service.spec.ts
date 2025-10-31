@@ -401,4 +401,3 @@ describe('SitesService', () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
-});

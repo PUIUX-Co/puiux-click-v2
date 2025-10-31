@@ -63,6 +63,7 @@ describe('AuthService', () => {
             },
             organization: {
               create: jest.fn(),
+              findUnique: jest.fn(),
             },
             session: {
               create: jest.fn(),
