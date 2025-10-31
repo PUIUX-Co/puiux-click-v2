@@ -31,13 +31,28 @@ export default function DashboardPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    // Check localStorage directly for faster auth check
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
 
-    if (!authLoading && !isAuthenticated && !token) {
-      router.push('/login');
+    console.log('Dashboard Auth Check:', {
+      authLoading,
+      isAuthenticated,
+      hasUser: !!user,
+      hasToken: !!token,
+      hasStoredUser: !!storedUser,
+    });
+
+    // Only redirect after auth is fully loaded
+    if (!authLoading) {
+      // If no user and no token after loading completes, redirect to login
+      if (!isAuthenticated && !token) {
+        console.log('❌ Redirecting to login: no auth found');
+        router.push('/login');
+      } else {
+        console.log('✅ Auth OK, staying on dashboard');
+      }
     }
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, user, router]);
 
   useEffect(() => {
     // Only load data when user is fully loaded and authenticated
