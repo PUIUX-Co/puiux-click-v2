@@ -196,6 +196,215 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* 3 Builder Methods Section - NEW */}
+        <section className="relative overflow-hidden border-t bg-gradient-to-br from-primary/5 via-purple-500/5 to-background py-24">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-6xl">
+              {/* Section Header */}
+              <div className="mb-16 text-center">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
+                  </span>
+                  <span>⚡ اختر الطريقة الأنسب لك</span>
+                </div>
+                <h2 className="mb-4 text-3xl font-bold sm:text-4xl md:text-5xl">
+                  <span className="bg-gradient-to-r from-primary via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                    3 طرق ذكية
+                  </span>{' '}
+                  لبناء موقعك
+                </h2>
+                <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+                  كلها سريعة، كلها سهلة، كلها مدعومة بالذكاء الاصطناعي - اختر ما يناسبك
+                </p>
+              </div>
+
+              {/* Builder Methods Cards */}
+              <div className="grid gap-8 md:grid-cols-3">
+                {/* Method 1: Smart Wizard */}
+                <div className="group relative overflow-hidden rounded-3xl border-2 border-primary/50 bg-card p-8 shadow-lg transition-all hover:border-primary hover:shadow-2xl hover:shadow-primary/20">
+                  {/* Recommended Badge */}
+                  <div className="absolute -right-12 top-6 rotate-45 bg-gradient-to-r from-primary to-blue-500 px-12 py-1 text-xs font-bold text-white shadow-lg">
+                    ⭐ موصى به
+                  </div>
+
+                  {/* Icon */}
+                  <div className="mb-6 text-7xl transition-transform group-hover:scale-110">
+                    🧙‍♂️
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="mb-2 text-2xl font-bold">Smart Wizard</h3>
+
+                  {/* Time */}
+                  <div className="mb-4 flex items-center gap-2 text-primary">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-semibold">3-5 دقائق</span>
+                  </div>
+
+                  {/* Description */}
+                  <p className="mb-6 text-muted-foreground">
+                    خطوة بخطوة - مثالي للمبتدئين. الذكاء الاصطناعي يرشدك لإنشاء موقع احترافي بأسئلة بسيطة ومباشرة.
+                  </p>
+
+                  {/* Features */}
+                  <ul className="mb-8 space-y-3">
+                    <li className="flex items-start gap-2 text-sm">
+                      <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>خطوات واضحة ومنظمة</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>اختيار جاهز للألوان والتصاميم</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>قوالب احترافية حسب نوع نشاطك</span>
+                    </li>
+                  </ul>
+
+                  {/* Hover Gradient */}
+                  <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100"></div>
+                </div>
+
+                {/* Method 2: Chat AI */}
+                <div className="group relative overflow-hidden rounded-3xl border-2 bg-card p-8 shadow-lg transition-all hover:border-purple-500 hover:shadow-2xl hover:shadow-purple-500/20">
+                  {/* Icon */}
+                  <div className="mb-6 text-7xl transition-transform group-hover:scale-110">
+                    💬
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="mb-2 text-2xl font-bold">Chat AI</h3>
+
+                  {/* Time */}
+                  <div className="mb-4 flex items-center gap-2 text-purple-600">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-semibold">2-4 دقائق</span>
+                  </div>
+
+                  {/* Description */}
+                  <p className="mb-6 text-muted-foreground">
+                    حوار طبيعي مع الذكاء الاصطناعي. اشرح فكرتك بحرية والـ AI يبني موقعك الاحترافي تلقائياً.
+                  </p>
+
+                  {/* Features */}
+                  <ul className="mb-8 space-y-3">
+                    <li className="flex items-start gap-2 text-sm">
+                      <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>سريع ومرن جداً</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>بدون خطوات محددة - حرية كاملة</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>تعديل وتخصيص فوري</span>
+                    </li>
+                  </ul>
+
+                  {/* Hover Gradient */}
+                  <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100"></div>
+                </div>
+
+                {/* Method 3: Voice Builder */}
+                <div className="group relative overflow-hidden rounded-3xl border-2 bg-card p-8 opacity-95 shadow-lg transition-all hover:opacity-100">
+                  {/* Coming Soon Badge */}
+                  <div className="absolute -right-12 top-6 rotate-45 bg-gradient-to-r from-orange-500 to-red-500 px-12 py-1 text-xs font-bold text-white shadow-lg">
+                    🔜 قريباً
+                  </div>
+
+                  {/* Icon */}
+                  <div className="mb-6 text-7xl opacity-75 transition-transform group-hover:scale-110">
+                    🎤
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="mb-2 text-2xl font-bold">Voice Builder</h3>
+
+                  {/* Time */}
+                  <div className="mb-4 flex items-center gap-2 text-orange-600">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-semibold">2-3 دقائق</span>
+                  </div>
+
+                  {/* Description */}
+                  <p className="mb-6 text-muted-foreground">
+                    بصوتك فقط - بدون كتابة نهائياً! صف موقعك بصوتك والذكاء الاصطناعي ينفذ كل شيء.
+                  </p>
+
+                  {/* Features */}
+                  <ul className="mb-8 space-y-3">
+                    <li className="flex items-start gap-2 text-sm opacity-75">
+                      <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>بدون كتابة نهائياً</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm opacity-75">
+                      <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>أسرع طريقة على الإطلاق</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm opacity-75">
+                      <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>مثالي أثناء التنقل</span>
+                    </li>
+                  </ul>
+
+                  {/* Coming Soon Overlay */}
+                  <div className="absolute inset-0 -z-10 bg-gradient-to-br from-muted/20 to-transparent"></div>
+                </div>
+              </div>
+
+              {/* Bottom CTA */}
+              <div className="mt-16 text-center">
+                <Link
+                  href="/auth/register"
+                  className="group inline-flex h-14 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary via-blue-500 to-purple-600 px-10 text-base font-semibold text-white shadow-2xl transition-all hover:scale-105 hover:shadow-primary/30"
+                >
+                  <span>جرب أي طريقة مجاناً الآن</span>
+                  <svg className="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  💡 يمكنك التبديل بين الطرق في أي وقت - جرب كلها!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Decorative Blobs */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -left-4 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"></div>
+            <div className="absolute -right-4 top-1/3 h-96 w-96 rounded-full bg-purple-500/10 blur-3xl"></div>
+          </div>
+        </section>
+
         {/* Features/How it Works Section - Enhanced */}
         <section className="border-t bg-muted/30 py-24">
           <div className="container mx-auto px-4">

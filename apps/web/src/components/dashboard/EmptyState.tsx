@@ -2,9 +2,12 @@
 
 import { motion } from 'framer-motion';
 import { Sparkles, Plus, Rocket } from 'lucide-react';
-import Link from 'next/link';
 
-export default function EmptyState() {
+interface EmptyStateProps {
+  onCreateClick?: () => void;
+}
+
+export default function EmptyState({ onCreateClick }: EmptyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -35,20 +38,19 @@ export default function EmptyState() {
         </motion.div>
 
         {/* CTA Button */}
-        <Link href="/wizard">
-          <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/80 px-8 py-4 font-medium text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
-          >
-            <Plus className="h-5 w-5" />
-            <span>إنشاء موقعك الأول</span>
-            <Sparkles className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-          </motion.button>
-        </Link>
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onCreateClick}
+          className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/80 px-8 py-4 font-medium text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+        >
+          <Plus className="h-5 w-5" />
+          <span>إنشاء موقعك الأول</span>
+          <Sparkles className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+        </motion.button>
 
         {/* Features List */}
         <motion.div

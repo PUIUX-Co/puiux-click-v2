@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import SiteCard from '@/components/dashboard/SiteCard';
 import EmptyState from '@/components/dashboard/EmptyState';
+import BuilderSelectionDialog from '@/components/dashboard/BuilderSelectionDialog';
 
 export default function DashboardPage() {
   const { user, logout, loading: authLoading, isAuthenticated } = useAuth();
@@ -26,6 +27,7 @@ export default function DashboardPage() {
   const [sites, setSites] = useState<Site[]>([]);
   const [stats, setStats] = useState<SiteStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showBuilderDialog, setShowBuilderDialog] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -142,19 +144,18 @@ export default function DashboardPage() {
               </p>
             </motion.div>
 
-            <Link href="/wizard">
-              <motion.button
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="group flex h-12 sm:h-14 items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary to-primary/80 px-6 sm:px-8 font-medium text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
-              >
-                <Plus className="h-5 w-5" />
-                <span>إنشاء موقع جديد</span>
-                <Sparkles className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-              </motion.button>
-            </Link>
+            <motion.button
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowBuilderDialog(true)}
+              className="group flex h-12 sm:h-14 items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary to-primary/80 px-6 sm:px-8 font-medium text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+            >
+              <Plus className="h-5 w-5" />
+              <span>إنشاء موقع جديد</span>
+              <Sparkles className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+            </motion.button>
           </div>
         </div>
       </div>
@@ -196,7 +197,7 @@ export default function DashboardPage() {
 
         {/* Sites Grid */}
         {sites.length === 0 ? (
-          <EmptyState />
+          <EmptyState onCreateClick={() => setShowBuilderDialog(true)} />
         ) : (
           <div>
             <h2 className="mb-6 text-lg sm:text-xl font-semibold">
@@ -228,6 +229,12 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Builder Selection Dialog */}
+      <BuilderSelectionDialog
+        open={showBuilderDialog}
+        onOpenChange={setShowBuilderDialog}
+      />
     </div>
   );
 }
