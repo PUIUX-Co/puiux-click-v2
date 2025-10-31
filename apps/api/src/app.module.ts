@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './common/prisma/prisma.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 // Configuration
 import configuration from './config/configuration';
@@ -43,8 +44,8 @@ import configuration from './config/configuration';
     // Database
     PrismaModule,
 
-    // Feature Modules (to be added)
-    // AuthModule,
+    // Feature Modules
+    AuthModule,
     // UsersModule,
     // SitesModule,
     // TemplatesModule,
