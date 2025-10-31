@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -46,6 +48,16 @@ async function bootstrap() {
       },
     })
   );
+
+  // ============================================================================
+  // Logging & Error Handling
+  // ============================================================================
+
+  // Global logging interceptor
+  app.useGlobalInterceptors(new LoggingInterceptor());
+
+  // Global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // ============================================================================
   // API Versioning

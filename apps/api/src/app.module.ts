@@ -8,6 +8,7 @@ import { PrismaModule } from './common/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SitesModule } from './modules/sites/sites.module';
 import { AiModule } from './modules/ai/ai.module';
+import { HealthModule } from './modules/health/health.module';
 
 // Configuration
 import configuration from './config/configuration';
@@ -50,6 +51,7 @@ import configuration from './config/configuration';
     AuthModule,
     SitesModule,
     AiModule,
+    HealthModule,
     // UsersModule,
     // TemplatesModule,
   ],
