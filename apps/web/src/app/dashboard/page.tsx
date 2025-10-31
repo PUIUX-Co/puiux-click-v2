@@ -40,12 +40,21 @@ export default function DashboardPage() {
   }, [authLoading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    // Only load data when user is fully loaded and authenticated
+    if (isAuthenticated && user && !authLoading) {
       loadData();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user, authLoading]);
 
   const loadData = async () => {
+    // Double check token exists before making API calls
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token || !user) {
+      console.log('Skipping loadData: no token or user');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const [sitesData, statsData] = await Promise.all([
