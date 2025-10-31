@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SitesService } from '../sites.service';
 import { PrismaService } from '@/common/prisma/prisma.service';
+import { AiService } from '@/modules/ai/ai.service';
 import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 
 describe('SitesService', () => {
@@ -79,6 +80,13 @@ describe('SitesService', () => {
             user: {
               findUnique: jest.fn(),
             },
+          },
+        },
+        {
+          provide: AiService,
+          useValue: {
+            generateWebsite: jest.fn(),
+            generateContent: jest.fn(),
           },
         },
       ],
