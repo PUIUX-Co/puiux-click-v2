@@ -31,7 +31,10 @@ export default function DashboardPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    // Check localStorage directly for faster auth check
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+    if (!authLoading && !isAuthenticated && !token) {
       router.push('/login');
     }
   }, [authLoading, isAuthenticated, router]);

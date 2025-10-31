@@ -64,10 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           icon: '🎉',
           duration: 4000,
         });
-        // Use setTimeout to ensure state update completes before navigation
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 100);
+        // Use window.location for full page reload to ensure fresh state
+        window.location.href = '/dashboard';
       } catch (error: any) {
         const message =
           error.response?.data?.message ||
@@ -79,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     },
-    [router]
+    []
   );
 
   /**
@@ -94,10 +92,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           icon: '👋',
           duration: 3000,
         });
-        // Use setTimeout to ensure state update completes before navigation
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 100);
+        // Use window.location for full page reload to ensure fresh state
+        window.location.href = '/dashboard';
       } catch (error: any) {
         const message =
           error.response?.data?.message ||
@@ -109,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     },
-    [router]
+    []
   );
 
   /**
