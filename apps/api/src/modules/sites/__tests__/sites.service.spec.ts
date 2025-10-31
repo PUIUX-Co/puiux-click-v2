@@ -400,6 +400,5 @@ describe('SitesService', () => {
         service.remove('site-123', 'different-org')
       ).rejects.toThrow(NotFoundException);
     });
-    });
   });
 });
