@@ -29,12 +29,8 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
-  // Internationalization
-  i18n: {
-    locales: ['ar', 'en'],
-    defaultLocale: 'ar',
-    localeDetection: false,
-  },
+  // Note: i18n removed for MVP - will be added later with next-intl or custom implementation
+  // The UI is Arabic-first by default (dir="rtl" in layout)
 
   // Headers
   async headers() {

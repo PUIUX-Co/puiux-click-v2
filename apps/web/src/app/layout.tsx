@@ -43,10 +43,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   alternates: {
     canonical: '/',
-    languages: {
-      ar: '/ar',
-      en: '/en',
-    },
   },
   openGraph: {
     type: 'website',
@@ -95,13 +91,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: { locale?: string };
 }) {
-  const locale = params?.locale || 'ar';
-  const dir = locale === 'ar' ? 'rtl' : 'ltr';
+  // Arabic-first by default (MVP)
+  // i18n will be added in Phase 2 with next-intl or custom implementation
+  const locale = 'ar';
+  const dir = 'rtl';
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
