@@ -64,7 +64,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           icon: '🎉',
           duration: 4000,
         });
-        router.push('/dashboard');
+        // Use setTimeout to ensure state update completes before navigation
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 100);
       } catch (error: any) {
         const message =
           error.response?.data?.message ||
@@ -91,7 +94,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           icon: '👋',
           duration: 3000,
         });
-        router.push('/dashboard');
+        // Use setTimeout to ensure state update completes before navigation
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 100);
       } catch (error: any) {
         const message =
           error.response?.data?.message ||
