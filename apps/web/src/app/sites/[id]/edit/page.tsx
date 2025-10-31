@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getSite, updateSite, publishSite, unpublishSite, type Site } from '@/lib/api/sites';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ArrowLeft, Save, Eye, Sparkles, Globe, GlobeLock } from 'lucide-react';
+import { Loader2, ArrowLeft, Save, Eye, Sparkles, Globe, GlobeLock, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import GrapesJSEditor from '@/components/editor/GrapesJSEditor';
+import AIContentGenerator from '@/components/editor/AIContentGenerator';
 
 export default function EditSitePage() {
   const params = useParams();
@@ -18,6 +19,7 @@ export default function EditSitePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [isAIContentOpen, setIsAIContentOpen] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -159,6 +161,14 @@ export default function EditSitePage() {
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setIsAIContentOpen(true)}
+            className="flex h-8 items-center gap-2 rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 px-3 text-sm font-medium text-purple-700 transition-all hover:shadow-md"
+          >
+            <Wand2 className="h-4 w-4" />
+            <span className="hidden sm:inline">مولد المحتوى AI</span>
+          </button>
+
+          <button
             onClick={handlePreview}
             className="flex h-8 items-center gap-2 rounded-lg border border-border/50 bg-background/50 px-3 text-sm font-medium transition-colors hover:bg-muted"
           >
@@ -220,6 +230,21 @@ export default function EditSitePage() {
           onSave={handleSave}
         />
       </div>
+
+      {/* AI Content Generator Panel */}
+      <AIContentGenerator
+        isOpen={isAIContentOpen}
+        onClose={() => setIsAIContentOpen(false)}
+        siteData={
+          site
+            ? {
+                businessName: site.businessName,
+                industry: site.industry,
+                description: site.description,
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }
