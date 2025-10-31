@@ -3,15 +3,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, RotateCcw, Sparkles } from 'lucide-react';
+import { ArrowRight, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import ChatMessage from '@/components/chat/ChatMessage';
 import TypingIndicator from '@/components/chat/TypingIndicator';
 import ChatInput from '@/components/chat/ChatInput';
 import ProgressTracker from '@/components/chat/ProgressTracker';
+import PixiAvatar from '@/components/chat/PixiAvatar';
+import ConfettiEffect from '@/components/chat/ConfettiEffect';
+import LivePreview from '@/components/chat/LivePreview';
+import SuccessScreen from '@/components/chat/SuccessScreen';
+import ChatFooter from '@/components/chat/ChatFooter';
+import FloatingElements from '@/components/chat/FloatingElements';
 import { useAuth } from '@/contexts/AuthContext';
 import { createSite } from '@/lib/api/sites';
+import Image from 'next/image';
 
 import type {
   ChatMessage as ChatMessageType,
@@ -41,6 +48,8 @@ export default function ChatBuilderPage() {
     colorPalette: colorSchemes[0],
   });
   const [isCreating, setIsCreating] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [createdSiteId, setCreatedSiteId] = useState<string | null>(null);
 
   // Auth check
   useEffect(() => {
@@ -63,9 +72,9 @@ export default function ChatBuilderPage() {
     if (isAuthenticated && messages.length === 0) {
       setTimeout(() => {
         sendAIMessage(
-          `مرحباً ${user?.name || ''}! 👋\n\nأنا مساعدك الذكي في PUIUX Click. سأساعدك في إنشاء موقعك الاحترافي من خلال محادثة بسيطة.\n\nالعملية ستستغرق فقط 2-4 دقائق! 🚀\n\nهل أنت جاهز للبدء؟`,
+          `مرحباً ${user?.name || 'صديقي'}! 👋\n\nأنا بيكسي، مساعدك الذكي من PUIUX Click ✨\n\nسأساعدك في بناء موقع احترافي من خلال محادثة بسيطة وممتعة.\n\nالرحلة ستستغرق فقط 2-4 دقائق، وستحصل على موقع مذهل جاهز للنشر! 🚀\n\nهل أنت مستعد لبدء هذه المغامرة؟ 🎯`,
           'welcome',
-          ['نعم، لنبدأ! ✨', 'جاهز! 🚀']
+          ['نعم، لنبدأ! ✨', 'جاهز تماماً! 🚀', 'دعنا ننطلق! 💪']
         );
       }, 500);
     }
@@ -127,7 +136,7 @@ export default function ChatBuilderPage() {
       case 'welcome':
         // Move to industry selection
         sendAIMessage(
-          'رائع! لنبدأ 🎯\n\nما نوع نشاطك التجاري؟\n\nاختر من القائمة أو اكتب نوع نشاطك:',
+          'رائع! متحمس جداً للعمل معك! 🎯\n\nدعنا نبدأ بمعرفة نوع نشاطك التجاري.\n\nاختر من الخيارات التالية أو اكتب نوع نشاطك:',
           'industry',
           industries.map((ind) => `${ind.icon} ${ind.name}`)
         );
@@ -139,12 +148,12 @@ export default function ChatBuilderPage() {
         if (detectedIndustry) {
           setConversationData((prev) => ({ ...prev, industry: detectedIndustry.id }));
           sendAIMessage(
-            `ممتاز! ${detectedIndustry.icon} ${detectedIndustry.name}\n\nالآن، ما اسم ${detectedIndustry.name === 'مطعم' ? 'مطعمك' : detectedIndustry.name === 'عيادة أسنان' ? 'عيادتك' : 'نشاطك'}؟`,
+            `اختيار موفق! ${detectedIndustry.icon} ${detectedIndustry.name} مجال رائع! 💫\n\nفي PUIUX Click، نؤمن أن كل نشاط يستحق موقع مميز.\n\nالآن، ما اسم ${detectedIndustry.name === 'مطعم' ? 'مطعمك الرائع' : detectedIndustry.name === 'عيادة أسنان' ? 'عيادتك' : 'نشاطك'}؟`,
             'businessName'
           );
         } else {
           sendAIMessage(
-            'عذراً، لم أتمكن من تحديد نوع النشاط. يرجى الاختيار من القائمة أو التوضيح أكثر:',
+            'عذراً يا صديقي، لم أتمكن من تحديد نوع النشاط بدقة 😅\n\nيرجى الاختيار من القائمة أو توضيح أكثر:',
             'industry',
             industries.map((ind) => `${ind.icon} ${ind.name}`)
           );
@@ -154,7 +163,7 @@ export default function ChatBuilderPage() {
       case 'businessName':
         setConversationData((prev) => ({ ...prev, businessName: userInput }));
         sendAIMessage(
-          `جميل! "${userInput}" اسم رائع 🌟\n\nالآن، صف لي ${conversationData.industry === 'RESTAURANT' ? 'مطعمك' : 'نشاطك'} في سطر أو سطرين.\n\nما الذي يميزك عن المنافسين؟`,
+          `واااو! "${userInput}" اسم رائع ومميز! 🌟✨\n\nأحب هذا الاسم! له وقع خاص.\n\nالآن، صف لي ${conversationData.industry === 'RESTAURANT' ? 'مطعمك' : 'نشاطك'} في سطر أو سطرين.\n\nما السر الذي يجعلك مختلفاً عن الآخرين؟ 🎯`,
           'description'
         );
         break;
@@ -162,9 +171,9 @@ export default function ChatBuilderPage() {
       case 'description':
         setConversationData((prev) => ({ ...prev, description: userInput }));
         sendAIMessage(
-          `ممتاز! وصف واضح ومميز 📝\n\nكيف يمكن للعملاء التواصل معك؟\n\nأدخل رقم هاتف، أو بريد إلكتروني، أو كلاهما:`,
+          `مذهل! وصف واضح ومميز جداً! 📝💎\n\nأستطيع أن أرى الشغف في كلماتك! سيحب عملاؤك هذا.\n\nالآن، كيف يمكن للعملاء التواصل معك؟\n\nأدخل رقم هاتف، بريد إلكتروني، أو كلاهما:`,
           'contact',
-          ['+966 50 123 4567', 'info@example.com']
+          ['+966 50 123 4567', 'info@business.com', 'كلاهما']
         );
         break;
 
@@ -176,7 +185,7 @@ export default function ChatBuilderPage() {
           ...contactInfo,
         }));
         sendAIMessage(
-          `تمام! معلومات التواصل مسجلة ✅\n\nالآن لنختار نظام الألوان لموقعك 🎨\n\nاختر من الخيارات التالية:`,
+          `ممتاز! معلومات التواصل مسجلة بنجاح ✅\n\nأنت رائع! وصلنا للخطوة الأخيرة! 🎉\n\nالآن، دعنا نختار نظام الألوان الذي يعكس شخصية علامتك التجارية 🎨\n\nاختر من الخيارات الاحترافية التالية:`,
           'colors',
           colorSchemes.map((cs) => cs.name)
         );
@@ -190,7 +199,7 @@ export default function ChatBuilderPage() {
 
         // Start generation
         sendAIMessage(
-          `اختيار موفق! ${selectedScheme.name} 🎨\n\nجاري إنشاء موقعك الآن...\n\nهذا قد يستغرق 10-15 ثانية فقط ⚡`,
+          `اختيار رائع! ${selectedScheme.name} 🎨 سيكون مذهلاً!\n\nالآن، دع سحر PUIUX Click يعمل! ✨🚀\n\nجاري إنشاء موقعك الاحترافي بواسطة الذكاء الاصطناعي...\n\nهذا سيستغرق 10-15 ثانية فقط ⚡`,
           'generating'
         );
 
@@ -219,27 +228,33 @@ export default function ChatBuilderPage() {
         colorPalette: conversationData.colorPalette,
       });
 
-      // Success message
+      // Store site ID
+      setCreatedSiteId(site.id);
+
+      // Trigger confetti
+      setShowConfetti(true);
+
+      // Success message (will be replaced by SuccessScreen)
       sendAIMessage(
-        `🎉 تم! موقعك جاهز!\n\n"${conversationData.businessName}" أصبح الآن لديه موقع احترافي كامل.\n\nجاري توجيهك للمحرر لتخصيص موقعك...`,
+        `🎉 مبروووك! تم بنجاح! 🎊\n\nموقع "${conversationData.businessName}" جاهز الآن! ✨\n\nتم إنشاء موقع احترافي كامل مع تصميم مذهل، جاهز للنشر فوراً! 🚀`,
         'complete'
       );
 
       // Success toast
-      toast.success('تم إنشاء موقعك بنجاح! 🎉');
-
-      // Redirect to editor
-      setTimeout(() => {
-        router.push(`/sites/${site.id}/edit`);
-      }, 2000);
+      toast.success('🎉 تم إنشاء موقعك بنجاح!', {
+        duration: 4000,
+        icon: '✨',
+      });
     } catch (error) {
       console.error('Failed to create site:', error);
       sendAIMessage(
-        '😔 عذراً، حدث خطأ أثناء إنشاء الموقع.\n\nهل تريد المحاولة مرة أخرى؟',
+        '😔 عذراً يا صديقي، حدث خطأ غير متوقع.\n\nلا تقلق! يمكننا المحاولة مرة أخرى.\n\nهل تريد إعادة المحاولة؟',
         currentStep,
-        ['نعم، أعد المحاولة', 'العودة للبداية']
+        ['نعم، أعد المحاولة ✨', 'ابدأ من جديد 🔄']
       );
-      toast.error('فشل في إنشاء الموقع. يرجى المحاولة مرة أخرى.');
+      toast.error('فشل في إنشاء الموقع. يرجى المحاولة مرة أخرى.', {
+        duration: 5000,
+      });
     } finally {
       setIsCreating(false);
     }
@@ -289,23 +304,42 @@ export default function ChatBuilderPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-gradient-to-br from-purple-50 via-background to-blue-50">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-gradient-to-br from-purple-50 via-background to-blue-50">
+      {/* Floating Background Elements */}
+      <FloatingElements />
+
+      {/* Confetti Effect */}
+      <ConfettiEffect active={showConfetti} duration={4000} />
+
+      {/* Live Preview */}
+      <LivePreview data={conversationData} currentStep={currentStep} />
+
       {/* Header */}
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="border-b bg-background/80 backdrop-blur-xl"
+        className="relative z-10 border-b bg-background/80 backdrop-blur-xl"
       >
         <div className="mx-auto max-w-4xl px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 text-white shadow-lg">
-                <Sparkles className="h-5 w-5" />
-              </div>
+              <PixiAvatar size="md" animate />
               <div>
-                <h1 className="text-lg font-bold">Chat AI Builder</h1>
-                <p className="text-xs text-muted-foreground">محادثة ذكية - موقع احترافي</p>
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="https://puiux.com/wp-content/uploads/2021/09/Logo-Black-Copress.svg"
+                    alt="PUIUX Logo"
+                    width={60}
+                    height={20}
+                    className="h-5 w-auto"
+                  />
+                  <span className="text-lg font-bold">Click</span>
+                  <span className="text-xs rounded-full bg-purple-100 px-2 py-0.5 font-medium text-purple-700">
+                    Chat AI
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">مساعدك الذكي بيكسي ✨</p>
               </div>
             </div>
 
@@ -345,45 +379,62 @@ export default function ChatBuilderPage() {
       {/* Messages Area */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-6"
+        className="relative z-10 flex-1 overflow-y-auto px-4 py-6"
         role="log"
         aria-live="polite"
         aria-label="محادثة بناء الموقع"
       >
         <div className="mx-auto max-w-3xl space-y-4">
-          <AnimatePresence mode="popLayout">
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
-            ))}
-          </AnimatePresence>
+          {/* Show Success Screen when complete */}
+          {currentStep === 'complete' && createdSiteId ? (
+            <SuccessScreen
+              data={conversationData}
+              onViewSite={() => router.push(`/sites/${createdSiteId}/edit`)}
+            />
+          ) : (
+            <>
+              <AnimatePresence mode="popLayout">
+                {messages.map((message, index) => (
+                  <ChatMessage
+                    key={message.id}
+                    message={message}
+                    isLatest={index === messages.length - 1}
+                  />
+                ))}
+              </AnimatePresence>
 
-          {isTyping && <TypingIndicator />}
+              {isTyping && <TypingIndicator />}
+            </>
+          )}
 
           <div ref={messagesEndRef} />
         </div>
       </div>
 
       {/* Input Area */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="border-t bg-background/80 backdrop-blur-xl"
-      >
-        <div className="mx-auto max-w-3xl px-4 py-4">
-          <ChatInput
-            onSend={handleUserMessage}
-            suggestions={suggestions}
-            placeholder={
-              isCreating
-                ? 'جاري إنشاء موقعك...'
-                : currentStep === 'complete'
-                ? 'اكتمل! 🎉'
-                : 'اكتب إجابتك...'
-            }
-            disabled={isTyping || isCreating || currentStep === 'complete'}
-          />
-        </div>
-      </motion.div>
+      {currentStep !== 'complete' && (
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="relative z-10 border-t bg-background/80 backdrop-blur-xl"
+        >
+          <div className="mx-auto max-w-3xl px-4 py-4">
+            <ChatInput
+              onSend={handleUserMessage}
+              suggestions={suggestions}
+              placeholder={
+                isCreating
+                  ? 'جاري إنشاء موقعك بالذكاء الاصطناعي... ⚡'
+                  : 'اكتب إجابتك أو اختر من الاقتراحات... ✨'
+              }
+              disabled={isTyping || isCreating}
+            />
+          </div>
+        </motion.div>
+      )}
+
+      {/* Footer */}
+      <ChatFooter />
     </div>
   );
 }

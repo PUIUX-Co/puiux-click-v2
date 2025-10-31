@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Bot, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import type { ChatMessage as ChatMessageType } from '@/types/chat';
+import PixiAvatar from './PixiAvatar';
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -45,22 +46,36 @@ export default function ChatMessage({ message, isLatest }: ChatMessageProps) {
       aria-label={`${isUser ? 'رسالتك' : 'رسالة المساعد'}: ${message.content}`}
     >
       {/* Avatar */}
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.1, type: 'spring', stiffness: 500 }}
-        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
-          isUser
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-gradient-to-br from-purple-500 to-blue-600 text-white'
-        } shadow-md`}
-        aria-hidden="true"
-      >
-        {isUser ? <User className="h-4 w-4" /> : <Bot className="h-5 w-5" />}
-      </motion.div>
+      {isUser ? (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.1, type: 'spring', stiffness: 500 }}
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md"
+          aria-hidden="true"
+        >
+          <User className="h-4 w-4" />
+        </motion.div>
+      ) : (
+        <div className="flex-shrink-0">
+          <PixiAvatar size="sm" animate={isLatest} />
+        </div>
+      )}
 
       {/* Message Bubble */}
       <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[75%]`}>
+        {/* AI Name Badge */}
+        {!isUser && (
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-1 px-2 text-xs font-semibold text-purple-600"
+          >
+            بيكسي ✨
+          </motion.div>
+        )}
+
         <motion.div
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
@@ -68,7 +83,7 @@ export default function ChatMessage({ message, isLatest }: ChatMessageProps) {
           className={`rounded-2xl px-4 py-3 shadow-sm ${
             isUser
               ? 'bg-primary text-primary-foreground rounded-br-sm'
-              : 'bg-card border border-border rounded-bl-sm'
+              : 'bg-gradient-to-br from-white to-purple-50/30 border border-purple-100 rounded-bl-sm'
           }`}
         >
           <p className={`text-sm sm:text-base leading-relaxed whitespace-pre-wrap ${
