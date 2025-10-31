@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getSite, updateSite, type Site } from '@/lib/api/sites';
+import { getSite, updateSite, publishSite, unpublishSite, type Site } from '@/lib/api/sites';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ArrowLeft, Save, Eye, Sparkles } from 'lucide-react';
+import { Loader2, ArrowLeft, Save, Eye, Sparkles, Globe, GlobeLock } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -17,6 +17,7 @@ export default function EditSitePage() {
   const [site, setSite] = useState<Site | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -62,10 +63,35 @@ export default function EditSitePage() {
   };
 
   const handlePreview = () => {
-    if (site?.publishUrl) {
-      window.open(site.publishUrl, '_blank');
-    } else {
-      toast.error('الموقع غير منشور بعد');
+    if (!site) return;
+    router.push(`/sites/${site.id}/preview`);
+  };
+
+  const handlePublishToggle = async () => {
+    if (!site) return;
+
+    try {
+      setPublishing(true);
+
+      if (site.status === 'PUBLISHED') {
+        // Unpublish
+        const updatedSite = await unpublishSite(site.id);
+        setSite(updatedSite);
+        toast.success('تم إلغاء نشر الموقع بنجاح');
+      } else {
+        // Publish
+        const updatedSite = await publishSite(site.id);
+        setSite(updatedSite);
+        toast.success('🎉 تم نشر موقعك بنجاح!', {
+          duration: 4000,
+          icon: '✨',
+        });
+      }
+    } catch (error: any) {
+      console.error('Failed to toggle publish:', error);
+      toast.error(error.response?.data?.message || 'فشل في تحديث حالة النشر');
+    } finally {
+      setPublishing(false);
     }
   };
 
@@ -98,7 +124,7 @@ export default function EditSitePage() {
 
           <div className="hidden h-6 w-px bg-border/50 sm:block" />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-600 text-white shadow-lg shadow-primary/25">
               <Sparkles className="h-4 w-4" />
             </div>
@@ -107,6 +133,25 @@ export default function EditSitePage() {
                 محرر PUIUX Click
               </p>
               <p className="text-xs text-muted-foreground">{site.businessName}</p>
+            </div>
+
+            {/* Status Badge */}
+            <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+              site.status === 'PUBLISHED'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-gray-100 text-gray-600'
+            }`}>
+              {site.status === 'PUBLISHED' ? (
+                <>
+                  <Globe className="h-3 w-3" />
+                  <span>منشور</span>
+                </>
+              ) : (
+                <>
+                  <GlobeLock className="h-3 w-3" />
+                  <span>مسودة</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -119,6 +164,30 @@ export default function EditSitePage() {
           >
             <Eye className="h-4 w-4" />
             <span className="hidden sm:inline">معاينة</span>
+          </button>
+
+          <button
+            onClick={handlePublishToggle}
+            disabled={publishing}
+            className={`flex h-8 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-all disabled:opacity-50 ${
+              site.status === 'PUBLISHED'
+                ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
+                : 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+            }`}
+          >
+            {publishing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : site.status === 'PUBLISHED' ? (
+              <>
+                <GlobeLock className="h-4 w-4" />
+                <span className="hidden sm:inline">إلغاء النشر</span>
+              </>
+            ) : (
+              <>
+                <Globe className="h-4 w-4" />
+                <span className="hidden sm:inline">نشر</span>
+              </>
+            )}
           </button>
 
           <button

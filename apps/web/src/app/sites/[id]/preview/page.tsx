@@ -62,9 +62,9 @@ export default function PreviewPage({ params }: PreviewPageProps) {
   const getPreviewUrl = () => {
     if (!site) return '';
 
-    // If published, use public URL
-    if (site.isPublished && site.subdomain) {
-      return `https://${site.subdomain}.puiuxclick.com`;
+    // If published, use publishUrl
+    if (site.status === 'PUBLISHED' && site.publishUrl) {
+      return site.publishUrl;
     }
 
     // Otherwise, preview URL

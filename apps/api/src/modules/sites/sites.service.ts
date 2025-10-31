@@ -205,15 +205,20 @@ export class SitesService {
 
   /**
    * Publish a site
+   * Generates publishUrl based on slug
    */
   async publish(id: string, organizationId: string): Promise<SiteResponseDto> {
-    await this.findOne(id, organizationId);
+    const existingSite = await this.findOne(id, organizationId);
+
+    // Generate publishUrl from slug
+    const publishUrl = `https://${existingSite.slug}.puiuxclick.com`;
 
     const site = await this.prisma.site.update({
       where: { id },
       data: {
         status: SiteStatus.PUBLISHED,
         publishedAt: new Date(),
+        publishUrl,
       },
     });
 
