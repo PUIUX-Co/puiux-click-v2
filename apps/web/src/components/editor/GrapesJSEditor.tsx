@@ -237,11 +237,23 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
     });
 
     // Load site data if available
-    if (site.pages) {
+    if (site.pages && typeof site.pages === 'object') {
       try {
-        editorInstance.setComponents(JSON.parse(JSON.stringify(site.pages)));
+        // Check if it's a GrapesJS project format (has pages array)
+        const pagesData = site.pages as any;
+
+        if (pagesData.pages && Array.isArray(pagesData.pages)) {
+          // New format: GrapesJS project structure
+          editorInstance.loadProjectData(pagesData);
+        } else if (pagesData.home || pagesData.contact) {
+          // Old format: Simple pages structure - needs migration
+          console.warn('Old pages format detected, using default template');
+        } else {
+          // Unknown format
+          console.warn('Unknown pages format:', pagesData);
+        }
       } catch (error) {
-        console.warn('Failed to load site pages:', error);
+        console.error('Failed to load site pages:', error);
       }
     }
 

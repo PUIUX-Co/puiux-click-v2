@@ -4,11 +4,14 @@ import {
   BadRequestException,
   ForbiddenException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateSiteDto, UpdateSiteDto, SiteResponseDto } from './dto';
 import { Industry, SiteStatus, Site } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
+import { AiService } from '../ai/ai.service';
+import { GeneratedWebsite, GrapesJSPage } from '../ai/dto';
 
 /**
  * Sites Service
@@ -17,7 +20,12 @@ import { plainToInstance } from 'class-transformer';
  */
 @Injectable()
 export class SitesService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(SitesService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private aiService: AiService,
+  ) {}
 
   /**
    * Template mapping based on industry
@@ -34,6 +42,7 @@ export class SitesService {
   /**
    * Create a new site
    * Enforces organization limits and multi-tenancy
+   * Generates complete website with AI
    */
   async create(
     userId: string,
@@ -51,15 +60,10 @@ export class SitesService {
       createSiteDto.templateId ||
       this.INDUSTRY_TEMPLATES[createSiteDto.industry];
 
-    // 4. Generate initial pages structure based on template
-    const pages = this.generateInitialPages(
-      createSiteDto.industry,
-      createSiteDto,
-    );
-
-    // 5. Create site
+    // 4. Create site record first (with empty pages)
+    let site: Site;
     try {
-      const site = await this.prisma.site.create({
+      site = await this.prisma.site.create({
         data: {
           name: createSiteDto.name,
           slug,
@@ -73,18 +77,61 @@ export class SitesService {
           email: createSiteDto.email,
           address: createSiteDto.address,
           colorPalette: createSiteDto.colorPalette,
-          pages,
+          pages: {}, // Empty initially
           publishUrl: `https://${slug}.puiuxclick.com`,
         },
       });
-
-      return this.toResponseDto(site);
     } catch (error) {
       if (error.code === 'P2002') {
         throw new ConflictException('الموقع بهذا الاسم موجود مسبقاً');
       }
       throw error;
     }
+
+    // 5. Generate complete website with AI in background
+    try {
+      this.logger.log(`Generating initial site with AI for site ${site.id}`);
+
+      const generatedSite = await this.aiService.generateInitialSite({
+        industry: createSiteDto.industry,
+        businessName: createSiteDto.businessName,
+        description: createSiteDto.description,
+        colorPalette: createSiteDto.colorPalette,
+        contactInfo: {
+          phone: createSiteDto.phone,
+          email: createSiteDto.email,
+          address: createSiteDto.address,
+        },
+        language: 'ar', // Default to Arabic
+      });
+
+      // 6. Convert AI-generated HTML/CSS to GrapesJS format
+      const grapesJSPages = this.convertToGrapesJSFormat(generatedSite);
+
+      // 7. Update site with generated pages
+      site = await this.prisma.site.update({
+        where: { id: site.id },
+        data: { pages: grapesJSPages },
+      });
+
+      this.logger.log(`Successfully generated site ${site.id} with AI`);
+    } catch (error) {
+      // If AI generation fails, keep site with simple structure
+      this.logger.error(`AI generation failed for site ${site.id}:`, error);
+
+      // Fallback to simple pages structure
+      const fallbackPages = this.generateInitialPages(
+        createSiteDto.industry,
+        createSiteDto,
+      );
+
+      site = await this.prisma.site.update({
+        where: { id: site.id },
+        data: { pages: fallbackPages },
+      });
+    }
+
+    return this.toResponseDto(site);
   }
 
   /**
@@ -389,5 +436,76 @@ export class SitesService {
     return plainToInstance(SiteResponseDto, site, {
       excludeExtraneousValues: true,
     });
+  }
+
+  /**
+   * Convert AI-generated HTML/CSS to GrapesJS format
+   * GrapesJS expects a specific JSON structure with components, styles, etc.
+   */
+  private convertToGrapesJSFormat(generated: GeneratedWebsite): any {
+    // Create a GrapesJS project structure
+    // This is a simplified conversion - GrapesJS will parse the HTML into components
+    const grapesJSProject = {
+      assets: [],
+      styles: [
+        {
+          selectors: [],
+          style: generated.css || '',
+          mediaText: '',
+          atRuleType: '',
+        },
+      ],
+      pages: [
+        {
+          id: 'home',
+          name: 'الصفحة الرئيسية',
+          frames: [
+            {
+              component: {
+                type: 'wrapper',
+                components: [
+                  {
+                    type: 'html',
+                    content: generated.html || '<div>موقعك جاهز للتحرير</div>',
+                    attributes: {
+                      class: 'gjs-html-component',
+                    },
+                  },
+                ],
+              },
+              head: {
+                type: 'head',
+                components: [
+                  {
+                    type: 'link',
+                    attributes: {
+                      rel: 'stylesheet',
+                      href: 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    // Add sections metadata if available
+    if (generated.sections && generated.sections.length > 0) {
+      grapesJSProject['sections'] = generated.sections;
+    }
+
+    // Add JavaScript if available
+    if (generated.js) {
+      grapesJSProject['scripts'] = [
+        {
+          type: 'text/javascript',
+          content: generated.js,
+        },
+      ];
+    }
+
+    return grapesJSProject;
   }
 }

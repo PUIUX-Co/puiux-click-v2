@@ -10,6 +10,8 @@ import {
   SearchImagesDto,
   SearchImagesResponseDto,
   UnsplashImage,
+  GenerateInitialSiteDto,
+  GeneratedWebsite,
 } from './dto';
 
 /**
@@ -142,6 +144,52 @@ export class AiService {
       });
     } catch (error) {
       this.logger.warn('Failed to trigger download:', error);
+    }
+  }
+
+  /**
+   * Generate a complete initial website based on wizard data
+   * This creates a professional, fully-functional website that's ready to be edited
+   */
+  async generateInitialSite(dto: GenerateInitialSiteDto): Promise<GeneratedWebsite> {
+    // Check if AI generation is enabled
+    if (!this.config.get<boolean>('ENABLE_AI_GENERATION')) {
+      throw new BadRequestException('توليد المواقع بالذكاء الاصطناعي غير مفعل');
+    }
+
+    if (!this.anthropic && !this.openai) {
+      throw new BadRequestException('خدمات الذكاء الاصطناعي غير متاحة');
+    }
+
+    try {
+      const language = dto.language || 'ar';
+      const isRTL = language === 'ar';
+
+      // Build comprehensive prompt for site generation
+      const prompt = this.buildSiteGenerationPrompt(dto, isRTL);
+
+      // Generate with Claude (preferred for better quality)
+      const content = this.anthropic
+        ? await this.generateWithClaude(prompt, 8000)
+        : await this.generateWithOpenAI(prompt, 8000);
+
+      // Parse the JSON response
+      const generated = JSON.parse(content);
+
+      // Get sections structure based on industry
+      const sections = this.getSectionsForIndustry(dto.industry, dto.businessName);
+
+      return {
+        html: generated.html || '',
+        css: generated.css || '',
+        js: generated.js || '',
+        sections,
+      };
+    } catch (error) {
+      this.logger.error('Failed to generate initial site:', error);
+      throw new BadRequestException(
+        'فشل في توليد الموقع. يرجى المحاولة مرة أخرى.',
+      );
     }
   }
 
@@ -296,5 +344,169 @@ export class AiService {
         download_location: img.links.download_location,
       },
     };
+  }
+
+  /**
+   * Build comprehensive prompt for initial site generation
+   */
+  private buildSiteGenerationPrompt(dto: GenerateInitialSiteDto, isRTL: boolean): string {
+    const sections = this.getSectionsForIndustry(dto.industry, dto.businessName);
+    const sectionsList = sections.map(s => `- ${s.title} (${s.type})`).join('\n');
+
+    const contactInfo = dto.contactInfo || {};
+    const contactDetails = `
+الهاتف: ${contactInfo.phone || 'غير متوفر'}
+البريد الإلكتروني: ${contactInfo.email || 'غير متوفر'}
+العنوان: ${contactInfo.address || 'غير متوفر'}
+واتساب: ${contactInfo.whatsapp || 'غير متوفر'}
+فيسبوك: ${contactInfo.facebook || 'غير متوفر'}
+إنستجرام: ${contactInfo.instagram || 'غير متوفر'}
+`.trim();
+
+    return `أنت خبير تصميم مواقع ويب محترف ومطور Front-End متخصص.
+
+**المهمة:** أنشئ موقع ويب HTML/CSS/JS كامل ومتكامل وجاهز للاستخدام.
+
+**معلومات الموقع:**
+- نوع النشاط: ${this.getIndustryArabicName(dto.industry)}
+- اسم النشاط: ${dto.businessName}
+- الوصف: ${dto.description}
+- اللغة: ${isRTL ? 'العربية (RTL)' : 'الإنجليزية (LTR)'}
+
+**نظام الألوان:**
+- اللون الأساسي (Primary): ${dto.colorPalette.primary}
+- اللون الثانوي (Secondary): ${dto.colorPalette.secondary}
+- اللون المميز (Accent): ${dto.colorPalette.accent}
+
+**معلومات التواصل:**
+${contactDetails}
+
+**الأقسام المطلوبة:**
+${sectionsList}
+
+**المتطلبات الفنية:**
+
+1. **HTML:**
+   - استخدم بنية HTML5 دلالية (semantic)
+   - ${isRTL ? 'أضف dir="rtl" lang="ar" إلى <html>' : 'أضف dir="ltr" lang="en" إلى <html>'}
+   - استخدم Tailwind CSS classes للتصميم
+   - أضف data-gjs-type للعناصر الرئيسية لدعم GrapesJS
+   - كل section يجب أن يكون له id فريد
+
+2. **التصميم (CSS):**
+   - استخدم نظام الألوان المحدد فقط
+   - التصميم يجب أن يكون Modern و Professional
+   - Responsive Design (Mobile-First)
+   - استخدم Flexbox و Grid
+   - Smooth transitions و animations
+   - Glass morphism effects حيث مناسب
+   - ${isRTL ? 'دعم كامل للـ RTL' : 'دعم LTR'}
+
+3. **المحتوى:**
+   - ${isRTL ? 'اكتب المحتوى بالعربية الفصحى' : 'Write content in English'}
+   - محتوى واقعي وجذاب
+   - استخدم معلومات النشاط المقدمة
+   - أضف placeholders للصور: https://placehold.co/1200x600/${dto.colorPalette.primary.replace('#', '')}/ffffff?text=${dto.businessName}
+
+4. **JavaScript (اختياري):**
+   - أضف تفاعلات بسيطة إذا لزم الأمر
+   - Mobile menu toggle
+   - Smooth scroll
+   - Animations on scroll
+
+**هيكل الأقسام المطلوب:**
+
+- **Header/Navigation:** شريط تنقل ثابت مع logo و روابط الأقسام
+- **Hero Section:** قسم رئيسي جذاب مع عنوان رئيسي و CTA
+- **About Section:** نبذة عن النشاط مع صورة
+- **Services/Products Section:** عرض الخدمات أو المنتجات في Grid
+- **Contact Section:** نموذج تواصل + معلومات الاتصال
+- **Footer:** روابط مهمة + معلومات التواصل + حقوق النشر
+
+**التنسيق المطلوب:**
+
+أرجع JSON فقط بدون أي نص إضافي بالشكل التالي:
+
+\`\`\`json
+{
+  "html": "<!DOCTYPE html>\\n<html dir=\\"${isRTL ? 'rtl' : 'ltr'}\\" lang=\\"${isRTL ? 'ar' : 'en'}\\">\\n<head>...</head>\\n<body>...</body>\\n</html>",
+  "css": "/* Custom CSS here */\\n:root {\\n  --primary: ${dto.colorPalette.primary};\\n  --secondary: ${dto.colorPalette.secondary};\\n  --accent: ${dto.colorPalette.accent};\\n}\\n...",
+  "js": "// Optional JavaScript\\nconsole.log('Site loaded');"
+}
+\`\`\`
+
+**ملاحظات مهمة:**
+- الموقع يجب أن يكون كامل و Professional و جاهز للاستخدام فوراً
+- التصميم يجب أن يكون مناسب لنوع النشاط
+- استخدم أفضل الممارسات في UI/UX
+- الموقع يجب أن يكون متوافق مع GrapesJS Editor
+- NO markdown code blocks في الإخراج - JSON فقط!
+
+ابدأ الآن:`;
+  }
+
+  /**
+   * Get sections structure based on industry
+   */
+  private getSectionsForIndustry(industry: string, businessName: string): Array<{
+    id: string;
+    type: string;
+    title: string;
+    order: number;
+  }> {
+    const baseSections = [
+      { id: 'hero', type: 'hero', title: 'القسم الرئيسي', order: 1 },
+      { id: 'about', type: 'about', title: 'من نحن', order: 2 },
+    ];
+
+    const industrySections: Record<string, any[]> = {
+      RESTAURANT: [
+        { id: 'menu', type: 'products', title: 'قائمة الطعام', order: 3 },
+        { id: 'gallery', type: 'gallery', title: 'معرض الصور', order: 4 },
+        { id: 'testimonials', type: 'testimonials', title: 'آراء العملاء', order: 5 },
+        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 6 },
+      ],
+      DENTAL: [
+        { id: 'services', type: 'services', title: 'الخدمات', order: 3 },
+        { id: 'team', type: 'team', title: 'فريق العمل', order: 4 },
+        { id: 'testimonials', type: 'testimonials', title: 'آراء المرضى', order: 5 },
+        { id: 'contact', type: 'contact', title: 'احجز موعد', order: 6 },
+      ],
+      PORTFOLIO: [
+        { id: 'services', type: 'services', title: 'الخدمات', order: 3 },
+        { id: 'portfolio', type: 'gallery', title: 'أعمالنا', order: 4 },
+        { id: 'testimonials', type: 'testimonials', title: 'آراء العملاء', order: 5 },
+        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 6 },
+      ],
+      BUSINESS: [
+        { id: 'services', type: 'services', title: 'خدماتنا', order: 3 },
+        { id: 'features', type: 'features', title: 'مميزاتنا', order: 4 },
+        { id: 'team', type: 'team', title: 'فريق العمل', order: 5 },
+        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 6 },
+      ],
+      STORE: [
+        { id: 'products', type: 'products', title: 'المنتجات', order: 3 },
+        { id: 'categories', type: 'categories', title: 'التصنيفات', order: 4 },
+        { id: 'testimonials', type: 'testimonials', title: 'آراء العملاء', order: 5 },
+        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 6 },
+      ],
+    };
+
+    const sections = industrySections[industry] || industrySections.BUSINESS;
+    return [...baseSections, ...sections];
+  }
+
+  /**
+   * Get Arabic name for industry
+   */
+  private getIndustryArabicName(industry: string): string {
+    const names: Record<string, string> = {
+      RESTAURANT: 'مطعم',
+      DENTAL: 'عيادة أسنان',
+      PORTFOLIO: 'معرض أعمال',
+      BUSINESS: 'شركة',
+      STORE: 'متجر إلكتروني',
+    };
+    return names[industry] || 'نشاط تجاري';
   }
 }
