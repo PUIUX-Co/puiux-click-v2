@@ -75,10 +75,9 @@ const builderMethods: BuilderMethod[] = [
       'أسرع طريقة',
       'مثالي أثناء التنقل',
     ],
-    comingSoon: true,
-    route: '#',
+    route: '/voice-builder',
     color: 'text-orange-600',
-    hoverColor: 'hover:opacity-100',
+    hoverColor: 'hover:border-orange-500 hover:shadow-orange-500/20',
   },
 ];
 

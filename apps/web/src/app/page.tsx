@@ -326,14 +326,17 @@ export default function HomePage() {
                 </div>
 
                 {/* Method 3: Voice Builder */}
-                <div className="group relative overflow-hidden rounded-3xl border-2 bg-card p-8 opacity-95 shadow-lg transition-all hover:opacity-100">
-                  {/* Coming Soon Badge */}
+                <Link
+                  href="/voice-builder"
+                  className="group relative block overflow-hidden rounded-3xl border-2 bg-card p-8 shadow-lg transition-all hover:border-orange-500 hover:shadow-2xl hover:shadow-orange-500/20"
+                >
+                  {/* New Badge */}
                   <div className="absolute -right-12 top-6 rotate-45 bg-gradient-to-r from-orange-500 to-red-500 px-12 py-1 text-xs font-bold text-white shadow-lg">
-                    🔜 قريباً
+                    🆕 جديد
                   </div>
 
                   {/* Icon */}
-                  <div className="mb-6 text-7xl opacity-75 transition-transform group-hover:scale-110">
+                  <div className="mb-6 text-7xl transition-transform group-hover:scale-110">
                     🎤
                   </div>
 
@@ -375,9 +378,9 @@ export default function HomePage() {
                     </li>
                   </ul>
 
-                  {/* Coming Soon Overlay */}
-                  <div className="absolute inset-0 -z-10 bg-gradient-to-br from-muted/20 to-transparent"></div>
-                </div>
+                  {/* Hover Gradient */}
+                  <div className="absolute inset-0 -z-10 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100"></div>
+                </Link>
               </div>
 
               {/* Bottom CTA */}
