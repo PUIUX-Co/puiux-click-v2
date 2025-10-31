@@ -262,6 +262,7 @@ Read `PROJECT_STATE.md` (يتحدث تلقائياً):
 ❗ README.md - PRD الأساسي
 ❗ SESSION_HANDOFF.md - هذا الملف! (نقطة الدخول للـ Sessions الجديدة)
 ❗ PROJECT_STATE.md - حالة المشروع (يتحدث مع كل تقدم)
+❗ CURRENT_WORK.md - ⭐ Live log (يتحدث أثناء العمل - يُمسح في نهاية Session)
 ❗ docs/EXPERT_DECISIONS.md - القرارات الاستراتيجية للـ MVP
 ❗ docs/PRD.md - المواصفات الكاملة
 ❗ ROADMAP.md - الخطة
@@ -269,6 +270,11 @@ Read `PROJECT_STATE.md` (يتحدث تلقائياً):
 ❗ apps/web/src/app/layout.tsx - Root layout (Arabic RTL)
 ❗ apps/api/prisma/schema.prisma - Database schema
 ```
+
+**ملاحظة عن CURRENT_WORK.md:**
+- يُحدث أثناء العمل (real-time)
+- يُمسح في نهاية كل Session (بعد نقل المعلومات لهذا الملف)
+- إذا وجدته فيه محتوى = previous session انقطع!
 
 ---
 
