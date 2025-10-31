@@ -40,7 +40,7 @@ export default function HomePage() {
               {/* CTA Buttons */}
               <div className="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
-                  href="/auth/register"
+                  href="/register"
                   className="group relative inline-flex h-14 w-full items-center justify-center overflow-hidden rounded-xl bg-primary px-10 text-base font-semibold text-primary-foreground shadow-2xl transition-all hover:scale-105 hover:shadow-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-primary via-blue-500 to-purple-600 opacity-0 transition-opacity group-hover:opacity-100"></span>
