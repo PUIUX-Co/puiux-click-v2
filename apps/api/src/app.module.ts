@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SitesModule } from './modules/sites/sites.module';
+import { AiModule } from './modules/ai/ai.module';
 
 // Configuration
 import configuration from './config/configuration';
@@ -48,6 +49,7 @@ import configuration from './config/configuration';
     // Feature Modules
     AuthModule,
     SitesModule,
+    AiModule,
     // UsersModule,
     // TemplatesModule,
   ],

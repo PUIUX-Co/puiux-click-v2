@@ -1,0 +1,437 @@
+/**
+ * PUIUX Click Editor - Custom GrapesJS Styles
+ * Professional, modern, RTL-friendly editor styles
+ */
+
+/* ============================================================================
+   Editor Container
+   ============================================================================ */
+
+#gjs {
+  font-family: inherit;
+  direction: ltr; /* Editor itself is LTR, but canvas supports RTL */
+}
+
+/* ============================================================================
+   Panels - Modern, Glass morphism Style
+   ============================================================================ */
+
+.gjs-pn-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.gjs-pn-btn {
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  color: hsl(var(--foreground));
+}
+
+.gjs-pn-btn:hover {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.gjs-pn-btn.gjs-pn-active {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gjs-pn-btn svg {
+  fill: currentColor;
+}
+
+/* ============================================================================
+   Blocks Panel
+   ============================================================================ */
+
+.gjs-block-category {
+  margin-bottom: 16px;
+}
+
+.gjs-block-category .gjs-title {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-bottom: 8px;
+}
+
+.gjs-block {
+  width: calc(50% - 4px);
+  min-height: 80px;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  margin: 0 4px 8px 0;
+  padding: 8px;
+  transition: all 0.2s ease;
+  cursor: grab;
+}
+
+.gjs-block:hover {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.gjs-block:active {
+  cursor: grabbing;
+}
+
+.gjs-block__media {
+  margin-bottom: 6px;
+}
+
+.gjs-block-label {
+  font-size: 11px;
+  color: hsl(var(--foreground));
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ============================================================================
+   Style Manager
+   ============================================================================ */
+
+.gjs-sm-sector {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.gjs-sm-sector .gjs-sm-title {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.gjs-sm-sector .gjs-sm-title:hover {
+  background: hsl(var(--muted) / 0.8);
+}
+
+.gjs-sm-properties {
+  padding: 12px;
+}
+
+.gjs-sm-property {
+  margin-bottom: 12px;
+}
+
+.gjs-sm-label {
+  font-size: 11px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  margin-bottom: 6px;
+  text-transform: none;
+}
+
+.gjs-field input,
+.gjs-field select {
+  width: 100%;
+  padding: 6px 10px;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  font-size: 12px;
+  color: hsl(var(--foreground));
+  transition: border-color 0.2s ease;
+}
+
+.gjs-field input:focus,
+.gjs-field select:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1);
+}
+
+/* Color Picker */
+.gjs-field-color {
+  display: flex;
+  gap: 6px;
+}
+
+.gjs-field-color-picker {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid hsl(var(--border));
+  cursor: pointer;
+}
+
+/* ============================================================================
+   Layer Manager
+   ============================================================================ */
+
+.gjs-layer {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.gjs-layer:hover {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--primary));
+}
+
+.gjs-layer.gjs-selected {
+  background: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary));
+}
+
+.gjs-layer__icon {
+  color: hsl(var(--muted-foreground));
+}
+
+.gjs-layer__name {
+  color: hsl(var(--foreground));
+}
+
+/* ============================================================================
+   Canvas - The main editing area
+   ============================================================================ */
+
+.gjs-cv-canvas {
+  background: hsl(var(--muted) / 0.3);
+  background-image:
+    linear-gradient(45deg, hsl(var(--muted) / 0.5) 25%, transparent 25%),
+    linear-gradient(-45deg, hsl(var(--muted) / 0.5) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, hsl(var(--muted) / 0.5) 75%),
+    linear-gradient(-45deg, transparent 75%, hsl(var(--muted) / 0.5) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+.gjs-frame {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Selected element highlight */
+.gjs-selected {
+  outline: 2px solid hsl(var(--primary)) !important;
+  outline-offset: -2px;
+}
+
+/* Hover element highlight */
+.gjs-hovered {
+  outline: 2px dashed hsl(var(--primary) / 0.5) !important;
+  outline-offset: -2px;
+}
+
+/* ============================================================================
+   Toolbar - Element toolbar
+   ============================================================================ */
+
+.gjs-toolbar {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.gjs-toolbar-item {
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.gjs-toolbar-item:hover {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* ============================================================================
+   Modals
+   ============================================================================ */
+
+.gjs-mdl-dialog {
+  background: hsl(var(--background));
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.gjs-mdl-header {
+  background: hsl(var(--muted));
+  padding: 16px 20px;
+  border-bottom: 1px solid hsl(var(--border));
+  border-radius: 12px 12px 0 0;
+}
+
+.gjs-mdl-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.gjs-mdl-content {
+  padding: 20px;
+  color: hsl(var(--foreground));
+}
+
+.gjs-btn-prim {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gjs-btn-prim:hover {
+  opacity: 0.9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================================
+   Code Editor
+   ============================================================================ */
+
+.gjs-cm-editor {
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ============================================================================
+   Traits Panel
+   ============================================================================ */
+
+.gjs-trt-trait {
+  margin-bottom: 12px;
+}
+
+.gjs-trt-trait__label {
+  font-size: 11px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.gjs-trt-trait__field input {
+  width: 100%;
+  padding: 6px 10px;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  font-size: 12px;
+  color: hsl(var(--foreground));
+}
+
+/* ============================================================================
+   Responsive
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .gjs-block {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .blocks-container,
+  .styles-container {
+    width: 100%;
+    height: 50%;
+    position: fixed;
+    bottom: -50%;
+    left: 0;
+    right: 0;
+    transition: bottom 0.3s ease;
+  }
+
+  .blocks-container.active,
+  .styles-container.active {
+    bottom: 0;
+  }
+}
+
+/* ============================================================================
+   Dark Mode Support
+   ============================================================================ */
+
+.dark .gjs-pn-panel {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .gjs-cv-canvas {
+  background: hsl(var(--background));
+}
+
+/* ============================================================================
+   Animations
+   ============================================================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gjs-mdl-dialog {
+  animation: fadeIn 0.2s ease;
+}
+
+/* ============================================================================
+   Scrollbar Styling
+   ============================================================================ */
+
+.blocks-container::-webkit-scrollbar,
+.styles-container::-webkit-scrollbar,
+.layers-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.blocks-container::-webkit-scrollbar-track,
+.styles-container::-webkit-scrollbar-track,
+.layers-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.blocks-container::-webkit-scrollbar-thumb,
+.styles-container::-webkit-scrollbar-thumb,
+.layers-container::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+.blocks-container::-webkit-scrollbar-thumb:hover,
+.styles-container::-webkit-scrollbar-thumb:hover,
+.layers-container::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
