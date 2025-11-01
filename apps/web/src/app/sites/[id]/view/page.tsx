@@ -34,6 +34,61 @@ export default function ViewPage({ params }: ViewPageProps) {
     }
   };
 
+  const componentToHtml = (comp: any): string => {
+    if (!comp) return '';
+
+    // If it's a string, return it directly
+    if (typeof comp === 'string') return comp;
+
+    // If it has direct HTML content as string
+    if (typeof comp.components === 'string') {
+      return comp.components;
+    }
+
+    // Build opening tag
+    const tagName = comp.tagName || 'div';
+    let html = `<${tagName}`;
+
+    // Add attributes
+    if (comp.attributes) {
+      Object.entries(comp.attributes).forEach(([key, value]) => {
+        html += ` ${key}="${value}"`;
+      });
+    }
+
+    // Add inline styles
+    if (comp.style) {
+      const styleStr = Object.entries(comp.style)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('; ');
+      html += ` style="${styleStr}"`;
+    }
+
+    // Add classes
+    if (comp.classes && comp.classes.length > 0) {
+      html += ` class="${comp.classes.join(' ')}"`;
+    }
+
+    html += '>';
+
+    // Add content
+    if (comp.content) {
+      html += comp.content;
+    }
+
+    // Add children
+    if (Array.isArray(comp.components)) {
+      comp.components.forEach((child: any) => {
+        html += componentToHtml(child);
+      });
+    }
+
+    // Close tag
+    html += `</${tagName}>`;
+
+    return html;
+  };
+
   const renderSite = () => {
     if (!site?.pages) return null;
 
@@ -46,22 +101,42 @@ export default function ViewPage({ params }: ViewPageProps) {
 
     const component = frame.component;
 
-    // Build HTML
+    // Build HTML from component tree
     let html = '';
-    if (component?.components) {
-      component.components.forEach((comp: any) => {
-        if (comp.type === 'html' && comp.content) {
-          html += comp.content;
-        }
-      });
+    if (component) {
+      if (typeof component.components === 'string') {
+        // If components is already HTML string
+        html = component.components;
+      } else if (Array.isArray(component.components)) {
+        // If components is an array of components
+        component.components.forEach((comp: any) => {
+          html += componentToHtml(comp);
+        });
+      } else {
+        // Try to convert the component itself
+        html = componentToHtml(component);
+      }
     }
 
     // Build CSS
     let css = '';
+
+    // Add Google Fonts for Cairo
+    css += `@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');\n`;
+    css += `body { font-family: 'Cairo', sans-serif; direction: rtl; }\n`;
+
     if (grapesData.styles && Array.isArray(grapesData.styles)) {
       grapesData.styles.forEach((style: any) => {
         if (style.style) {
-          css += style.style;
+          css += style.style + '\n';
+        }
+        if (style.selectors) {
+          const selector = Array.isArray(style.selectors)
+            ? style.selectors.map((s: any) => typeof s === 'string' ? `.${s}` : `.${s.name}`).join(', ')
+            : '';
+          if (selector && style.style) {
+            css += `${selector} { ${style.style} }\n`;
+          }
         }
       });
     }

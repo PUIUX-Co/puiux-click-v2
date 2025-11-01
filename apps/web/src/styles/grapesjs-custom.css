@@ -1,6 +1,6 @@
 /**
  * PUIUX Click Editor - Custom GrapesJS Styles
- * Professional, modern, RTL-friendly editor styles
+ * Professional, modern, RTL-friendly editor with proper visibility
  */
 
 /* ============================================================================
@@ -9,42 +9,56 @@
 
 .grapesjs-editor-container {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Cairo', sans-serif;
+  background: #f7fafc;
 }
 
 #gjs {
   font-family: inherit;
-  direction: ltr; /* Editor itself is LTR, but canvas supports RTL */
+  direction: ltr;
 }
 
-/* Reset GrapesJS default positioning issues */
+/* Reset GrapesJS default positioning */
 .gjs-cv-canvas {
   top: 0 !important;
-  width: 100% !important;
+  left: 260px !important;
+  right: 260px !important;
+  width: calc(100% - 520px) !important;
   height: 100% !important;
 }
 
-.gjs-frame {
-  height: 100%;
-}
-
 /* ============================================================================
-   Panels - Modern, Clean Style
+   Top Panels - Actions and Devices
    ============================================================================ */
 
-.gjs-pn-panel {
-  background: rgba(255, 255, 255, 0.98) !important;
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  border-radius: 10px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
-  padding: 6px !important;
-}
-
-.gjs-pn-buttons {
+.panel__basic-actions {
+  position: absolute !important;
+  top: 16px !important;
+  right: 280px !important;
+  z-index: 50 !important;
   display: flex !important;
-  gap: 4px;
+  gap: 8px !important;
+  background: white !important;
+  padding: 8px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
+.panel__devices {
+  position: absolute !important;
+  top: 16px !important;
+  left: 280px !important;
+  z-index: 50 !important;
+  display: flex !important;
+  gap: 8px !important;
+  background: white !important;
+  padding: 8px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Panel Buttons */
 .gjs-pn-btn {
   min-width: 40px !important;
   min-height: 40px !important;
@@ -57,12 +71,13 @@
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
+  position: relative !important;
 }
 
 .gjs-pn-btn:hover {
-  background: #f7fafc !important;
+  background: #f0f4f8 !important;
   color: #2d3748 !important;
-  transform: translateY(-1px);
+  transform: translateY(-1px) !important;
 }
 
 .gjs-pn-btn.gjs-pn-active {
@@ -77,59 +92,25 @@
   height: 18px !important;
 }
 
-/* Top panels positioning */
-.gjs-pn-commands {
-  position: absolute !important;
-  top: 16px !important;
-  right: 280px !important;
-  z-index: 10 !important;
-}
-
-.gjs-pn-devices-c {
-  position: absolute !important;
-  top: 16px !important;
-  left: 280px !important;
-  z-index: 10 !important;
-}
-
-/* Side panels */
-.gjs-pn-views-container {
-  position: absolute !important;
-  right: 0 !important;
-  top: 0 !important;
-  width: 260px !important;
-  height: 100% !important;
-  background: white !important;
-  border-left: 1px solid #e2e8f0 !important;
-  overflow-y: auto !important;
-  z-index: 5 !important;
-}
-
-.gjs-pn-views {
-  border-bottom: 1px solid #e2e8f0 !important;
-  padding: 12px !important;
-  background: #f8fafc !important;
-}
-
 /* ============================================================================
-   Blocks Panel
+   Left Sidebar - Blocks
    ============================================================================ */
 
-.gjs-blocks-c {
+.blocks-container {
   position: absolute !important;
   left: 0 !important;
   top: 0 !important;
   width: 260px !important;
   height: 100% !important;
   background: white !important;
-  border-right: 1px solid #e2e8f0 !important;
+  border-right: 2px solid #e2e8f0 !important;
   overflow-y: auto !important;
-  z-index: 5 !important;
-  padding: 16px !important;
+  z-index: 40 !important;
+  padding: 20px 16px !important;
 }
 
 .gjs-block-category {
-  margin-bottom: 20px !important;
+  margin-bottom: 24px !important;
 }
 
 .gjs-block-category .gjs-title {
@@ -138,11 +119,12 @@
   padding: 10px 14px !important;
   border-radius: 8px !important;
   font-size: 12px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
   margin-bottom: 12px !important;
   border: 1px solid #e2e8f0 !important;
+  cursor: pointer !important;
 }
 
 .gjs-blocks-cs {
@@ -169,8 +151,8 @@
 
 .gjs-block:hover {
   border-color: #667eea !important;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15) !important;
-  transform: translateY(-3px) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
+  transform: translateY(-2px) !important;
 }
 
 .gjs-block:active {
@@ -193,78 +175,128 @@
 }
 
 /* ============================================================================
-   Style Manager
+   Right Sidebar - Style Manager & Layers
    ============================================================================ */
 
+.styles-container,
+.layers-container,
+.traits-container,
+.selectors-container {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  width: 260px !important;
+  height: 100% !important;
+  background: white !important;
+  border-left: 2px solid #e2e8f0 !important;
+  overflow-y: auto !important;
+  z-index: 40 !important;
+  padding: 16px !important;
+}
+
+/* Panel Views Container */
+.gjs-pn-views-container {
+  background: white !important;
+  border: none !important;
+}
+
+.gjs-pn-views {
+  display: flex !important;
+  gap: 4px !important;
+  padding: 8px !important;
+  background: #f8fafc !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  margin-bottom: 12px !important;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+.gjs-pn-btn.gjs-pn-active {
+  background: #667eea !important;
+  color: white !important;
+}
+
+/* Style Manager Sectors */
 .gjs-sm-sector {
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-  border-radius: 8px;
-  margin-bottom: 12px;
-  overflow: hidden;
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  margin-bottom: 12px !important;
+  overflow: hidden !important;
 }
 
 .gjs-sm-sector .gjs-sm-title {
-  background: hsl(var(--muted));
-  color: hsl(var(--foreground));
-  padding: 10px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
+  background: #f8fafc !important;
+  color: #2d3748 !important;
+  padding: 10px 12px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
 .gjs-sm-sector .gjs-sm-title:hover {
-  background: hsl(var(--muted) / 0.8);
+  background: #edf2f7 !important;
 }
 
 .gjs-sm-properties {
-  padding: 12px;
+  padding: 12px !important;
+  background: white !important;
 }
 
 .gjs-sm-property {
-  margin-bottom: 12px;
+  margin-bottom: 12px !important;
 }
 
 .gjs-sm-label {
-  font-size: 11px;
-  color: hsl(var(--muted-foreground));
-  font-weight: 500;
-  margin-bottom: 6px;
-  text-transform: none;
+  font-size: 11px !important;
+  color: #718096 !important;
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
+  display: block !important;
+  text-transform: capitalize !important;
 }
 
+/* Form Fields */
 .gjs-field input,
-.gjs-field select {
-  width: 100%;
-  padding: 6px 10px;
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-  border-radius: 6px;
-  font-size: 12px;
-  color: hsl(var(--foreground));
-  transition: border-color 0.2s ease;
+.gjs-field select,
+.gjs-field-integer input,
+.gjs-field-color input {
+  width: 100% !important;
+  padding: 8px 10px !important;
+  background: white !important;
+  border: 1px solid #cbd5e0 !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  color: #2d3748 !important;
+  transition: all 0.2s ease !important;
 }
 
 .gjs-field input:focus,
 .gjs-field select:focus {
-  outline: none;
-  border-color: hsl(var(--primary));
-  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1);
+  outline: none !important;
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
 }
 
 /* Color Picker */
 .gjs-field-color {
-  display: flex;
-  gap: 6px;
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
 }
 
 .gjs-field-color-picker {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: 1px solid hsl(var(--border));
-  cursor: pointer;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 6px !important;
+  border: 2px solid #cbd5e0 !important;
+  cursor: pointer !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.gjs-field-color-picker:hover {
+  border-color: #667eea !important;
 }
 
 /* ============================================================================
@@ -272,35 +304,38 @@
    ============================================================================ */
 
 .gjs-layer {
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-  border-radius: 6px;
-  margin-bottom: 4px;
-  padding: 6px 8px;
-  font-size: 12px;
-  transition: all 0.2s ease;
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 6px !important;
+  margin-bottom: 4px !important;
+  padding: 8px 10px !important;
+  font-size: 12px !important;
+  transition: all 0.2s ease !important;
+  color: #2d3748 !important;
 }
 
 .gjs-layer:hover {
-  background: hsl(var(--muted));
-  border-color: hsl(var(--primary));
+  background: #f7fafc !important;
+  border-color: #667eea !important;
 }
 
 .gjs-layer.gjs-selected {
-  background: hsl(var(--primary) / 0.1);
-  border-color: hsl(var(--primary));
+  background: #eef2ff !important;
+  border-color: #667eea !important;
+  font-weight: 600 !important;
 }
 
 .gjs-layer__icon {
-  color: hsl(var(--muted-foreground));
+  color: #718096 !important;
+  margin-right: 6px !important;
 }
 
 .gjs-layer__name {
-  color: hsl(var(--foreground));
+  color: #2d3748 !important;
 }
 
 /* ============================================================================
-   Canvas - The main editing area
+   Canvas - Main Editing Area
    ============================================================================ */
 
 .gjs-cv-canvas {
@@ -312,112 +347,104 @@
     linear-gradient(-45deg, transparent 75%, #e2e8f0 75%) !important;
   background-size: 20px 20px !important;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
-  padding: 30px !important;
+  padding: 40px !important;
 }
 
 .gjs-frame {
-  border-radius: 0 !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
   background: white !important;
+  margin: 0 auto !important;
 }
 
-/* Selected element highlight */
+/* Selected Element Highlight */
 .gjs-selected {
-  outline: 2px solid #667eea !important;
-  outline-offset: -2px !important;
+  outline: 3px solid #667eea !important;
+  outline-offset: -3px !important;
 }
 
-/* Hover element highlight */
+/* Hover Element Highlight */
 .gjs-hovered {
   outline: 2px dashed #a0aec0 !important;
   outline-offset: -2px !important;
 }
 
-/* Canvas wrapper */
-.gjs-cv-canvas__frames {
-  margin: 0 auto !important;
-}
-
 /* ============================================================================
-   Toolbar - Element toolbar
+   Toolbar - Element Actions
    ============================================================================ */
 
 .gjs-toolbar {
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-  border-radius: 8px;
-  padding: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: white !important;
+  border: 1px solid #cbd5e0 !important;
+  border-radius: 8px !important;
+  padding: 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .gjs-toolbar-item {
-  min-width: 28px;
-  min-height: 28px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+  background: transparent !important;
+  color: #4a5568 !important;
+  border: none !important;
+  margin: 0 2px !important;
 }
 
 .gjs-toolbar-item:hover {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  background: #667eea !important;
+  color: white !important;
 }
 
 /* ============================================================================
    Modals
    ============================================================================ */
 
+.gjs-mdl-container {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+
 .gjs-mdl-dialog {
-  background: hsl(var(--background));
-  border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
 .gjs-mdl-header {
-  background: hsl(var(--muted));
-  padding: 16px 20px;
-  border-bottom: 1px solid hsl(var(--border));
-  border-radius: 12px 12px 0 0;
+  background: #f8fafc !important;
+  padding: 16px 20px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-radius: 12px 12px 0 0 !important;
 }
 
 .gjs-mdl-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: hsl(var(--foreground));
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #2d3748 !important;
 }
 
 .gjs-mdl-content {
-  padding: 20px;
-  color: hsl(var(--foreground));
+  padding: 20px !important;
+  color: #2d3748 !important;
 }
 
 .gjs-btn-prim {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  background: #667eea !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
 }
 
 .gjs-btn-prim:hover {
-  opacity: 0.9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* ============================================================================
-   Code Editor
-   ============================================================================ */
-
-.gjs-cm-editor {
-  background: hsl(var(--muted));
-  border: 1px solid hsl(var(--border));
-  border-radius: 8px;
-  padding: 12px;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.5;
+  background: #5568d3 !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
 }
 
 /* ============================================================================
@@ -425,83 +452,33 @@
    ============================================================================ */
 
 .gjs-trt-trait {
-  margin-bottom: 12px;
+  margin-bottom: 14px !important;
 }
 
 .gjs-trt-trait__label {
-  font-size: 11px;
-  color: hsl(var(--muted-foreground));
-  font-weight: 500;
-  margin-bottom: 6px;
+  font-size: 11px !important;
+  color: #718096 !important;
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
+  display: block !important;
 }
 
-.gjs-trt-trait__field input {
-  width: 100%;
-  padding: 6px 10px;
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-  border-radius: 6px;
-  font-size: 12px;
-  color: hsl(var(--foreground));
+.gjs-trt-trait__field input,
+.gjs-trt-trait__field select {
+  width: 100% !important;
+  padding: 8px 10px !important;
+  background: white !important;
+  border: 1px solid #cbd5e0 !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  color: #2d3748 !important;
 }
 
-/* ============================================================================
-   Responsive
-   ============================================================================ */
-
-@media (max-width: 768px) {
-  .gjs-block {
-    width: 100%;
-    margin-right: 0;
-  }
-
-  .blocks-container,
-  .styles-container {
-    width: 100%;
-    height: 50%;
-    position: fixed;
-    bottom: -50%;
-    left: 0;
-    right: 0;
-    transition: bottom 0.3s ease;
-  }
-
-  .blocks-container.active,
-  .styles-container.active {
-    bottom: 0;
-  }
-}
-
-/* ============================================================================
-   Dark Mode Support
-   ============================================================================ */
-
-.dark .gjs-pn-panel {
-  background: rgba(0, 0, 0, 0.8);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.dark .gjs-cv-canvas {
-  background: hsl(var(--background));
-}
-
-/* ============================================================================
-   Animations
-   ============================================================================ */
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.gjs-mdl-dialog {
-  animation: fadeIn 0.2s ease;
+.gjs-trt-trait__field input:focus,
+.gjs-trt-trait__field select:focus {
+  outline: none !important;
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
 }
 
 /* ============================================================================
@@ -510,26 +487,87 @@
 
 .blocks-container::-webkit-scrollbar,
 .styles-container::-webkit-scrollbar,
-.layers-container::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.layers-container::-webkit-scrollbar,
+.traits-container::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
 }
 
 .blocks-container::-webkit-scrollbar-track,
 .styles-container::-webkit-scrollbar-track,
-.layers-container::-webkit-scrollbar-track {
-  background: transparent;
+.layers-container::-webkit-scrollbar-track,
+.traits-container::-webkit-scrollbar-track {
+  background: #f7fafc !important;
 }
 
 .blocks-container::-webkit-scrollbar-thumb,
 .styles-container::-webkit-scrollbar-thumb,
-.layers-container::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
-  border-radius: 3px;
+.layers-container::-webkit-scrollbar-thumb,
+.traits-container::-webkit-scrollbar-thumb {
+  background: #cbd5e0 !important;
+  border-radius: 4px !important;
 }
 
 .blocks-container::-webkit-scrollbar-thumb:hover,
 .styles-container::-webkit-scrollbar-thumb:hover,
-.layers-container::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+.layers-container::-webkit-scrollbar-thumb:hover,
+.traits-container::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0 !important;
+}
+
+/* ============================================================================
+   Responsive View
+   ============================================================================ */
+
+.gjs-cv-canvas__frames {
+  margin: 0 auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  min-height: 100% !important;
+}
+
+/* ============================================================================
+   Additional Fixes
+   ============================================================================ */
+
+/* Fix GrapesJS default white-on-white issues */
+.gjs-one-bg,
+.gjs-two-color,
+.gjs-three-bg {
+  background: white !important;
+  color: #2d3748 !important;
+}
+
+.gjs-four-color,
+.gjs-four-color-h:hover {
+  color: #667eea !important;
+}
+
+/* Fix input visibility */
+input[type="text"],
+input[type="number"],
+select {
+  color: #2d3748 !important;
+  background: white !important;
+}
+
+/* Fix button text */
+button {
+  color: #2d3748 !important;
+}
+
+button:hover {
+  color: #667eea !important;
+}
+
+/* Ensure all text is visible */
+* {
+  color: inherit;
+}
+
+.gjs-field,
+.gjs-sm-property,
+.gjs-layer {
+  color: #2d3748 !important;
 }

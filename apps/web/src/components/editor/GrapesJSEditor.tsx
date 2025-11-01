@@ -350,8 +350,21 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
   };
 
   return (
-    <div className="grapesjs-editor-container h-full w-full relative">
-      {/* GrapesJS Container */}
+    <div className="grapesjs-editor-container h-full w-full relative bg-white">
+      {/* Top Panels */}
+      <div className="panel__basic-actions" />
+      <div className="panel__devices" />
+
+      {/* Left Sidebar - Blocks */}
+      <div className="blocks-container" />
+
+      {/* Right Sidebar - Managers */}
+      <div className="styles-container" />
+      <div className="layers-container" />
+      <div className="traits-container" />
+      <div className="selectors-container" />
+
+      {/* Main GrapesJS Container */}
       <div ref={editorRef} id="gjs" className="h-full w-full" />
     </div>
   );
