@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getSite, updateSite, publishSite, unpublishSite, type Site } from '@/lib/api/sites';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ArrowLeft, Save, Eye, Sparkles, Globe, GlobeLock, Wand2 } from 'lucide-react';
+import { Loader2, ArrowLeft, Save, Eye, Sparkles, Globe, Lock, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -162,7 +162,7 @@ export default function EditSitePage() {
                 </>
               ) : (
                 <>
-                  <GlobeLock className="h-3 w-3" />
+                  <Lock className="h-3 w-3" />
                   <span>مسودة</span>
                 </>
               )}
@@ -201,7 +201,7 @@ export default function EditSitePage() {
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : site.status === 'PUBLISHED' ? (
               <>
-                <GlobeLock className="h-4 w-4" />
+                <Lock className="h-4 w-4" />
                 <span className="hidden sm:inline">إلغاء النشر</span>
               </>
             ) : (
