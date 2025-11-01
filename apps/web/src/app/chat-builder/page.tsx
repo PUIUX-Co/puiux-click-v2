@@ -217,16 +217,32 @@ export default function ChatBuilderPage() {
     setIsCreating(true);
 
     try {
-      const site = await createSite({
+      // Prepare site data with proper validation
+      const siteData: any = {
         name: conversationData.businessName,
         industry: conversationData.industry as any,
         businessName: conversationData.businessName,
-        description: conversationData.description,
-        email: conversationData.email,
-        phone: conversationData.phone,
-        address: conversationData.address,
-        colorPalette: conversationData.colorPalette,
-      });
+        description: conversationData.description || undefined,
+        address: conversationData.address || undefined,
+        // Extract only allowed colorPalette properties
+        colorPalette: {
+          primary: conversationData.colorPalette.primary,
+          secondary: conversationData.colorPalette.secondary,
+          accent: conversationData.colorPalette.accent,
+        },
+      };
+
+      // Only include email if it's valid
+      if (conversationData.email && conversationData.email.includes('@')) {
+        siteData.email = conversationData.email;
+      }
+
+      // Only include phone if it's not empty and has numbers
+      if (conversationData.phone && conversationData.phone.replace(/\D/g, '').length >= 10) {
+        siteData.phone = conversationData.phone;
+      }
+
+      const site = await createSite(siteData);
 
       // Store site ID
       setCreatedSiteId(site.id);
