@@ -21,7 +21,7 @@ import {
   FileText,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { generateText } from '@/lib/api/ai';
+import { generateText, ContentType } from '@/lib/api/ai';
 
 /**
  * AI Content Generator Panel
@@ -38,16 +38,6 @@ interface AIContentGeneratorProps {
   };
 }
 
-type ContentType =
-  | 'hero_heading'
-  | 'hero_subheading'
-  | 'about'
-  | 'services'
-  | 'products'
-  | 'cta'
-  | 'testimonial'
-  | 'footer';
-
 type Tone = 'professional' | 'friendly' | 'formal' | 'casual';
 
 interface ContentOption {
@@ -59,52 +49,52 @@ interface ContentOption {
 
 const contentTypes: ContentOption[] = [
   {
-    type: 'hero_heading',
+    type: ContentType.HERO_TITLE,
     label: 'عنوان رئيسي (Hero)',
     icon: Heading1,
     placeholder: 'مثال: مطعم فاخر متخصص في المأكولات الإيطالية',
   },
   {
-    type: 'hero_subheading',
+    type: ContentType.HERO_SUBTITLE,
     label: 'عنوان فرعي (Hero)',
     icon: AlignLeft,
     placeholder: 'مثال: نقدم أشهى الأطباق الإيطالية الأصيلة',
   },
   {
-    type: 'about',
+    type: ContentType.ABOUT_SECTION,
     label: 'قسم "عنا"',
     icon: MessageSquare,
     placeholder: 'مثال: مطعم تأسس عام 2020 بخبرة 20 سنة',
   },
   {
-    type: 'services',
+    type: ContentType.SERVICE_DESCRIPTION,
     label: 'وصف الخدمات',
     icon: List,
     placeholder: 'مثال: خدمات تصميم مواقع احترافية',
   },
   {
-    type: 'products',
+    type: ContentType.PRODUCT_DESCRIPTION,
     label: 'وصف المنتجات',
     icon: Package,
     placeholder: 'مثال: منتجات عضوية طبيعية 100%',
   },
   {
-    type: 'cta',
+    type: ContentType.CTA_TEXT,
     label: 'دعوة لاتخاذ إجراء (CTA)',
     icon: Phone,
     placeholder: 'مثال: احجز الآن واحصل على خصم 20%',
   },
   {
-    type: 'testimonial',
+    type: ContentType.TESTIMONIAL,
     label: 'شهادات العملاء',
     icon: Star,
     placeholder: 'مثال: عميل راضي عن جودة الخدمة',
   },
   {
-    type: 'footer',
-    label: 'نص التذييل',
+    type: ContentType.BLOG_POST,
+    label: 'مقال / نص طويل',
     icon: FileText,
-    placeholder: 'مثال: جميع الحقوق محفوظة 2025',
+    placeholder: 'مثال: مقال عن فوائد منتجاتنا',
   },
 ];
 
@@ -120,7 +110,7 @@ export default function AIContentGenerator({
   onClose,
   siteData,
 }: AIContentGeneratorProps) {
-  const [selectedType, setSelectedType] = useState<ContentType>('hero_heading');
+  const [selectedType, setSelectedType] = useState<ContentType>(ContentType.HERO_TITLE);
   const [selectedTone, setSelectedTone] = useState<Tone>('professional');
   const [context, setContext] = useState('');
   const [maxLength, setMaxLength] = useState(100);
@@ -157,7 +147,6 @@ export default function AIContentGenerator({
         context: fullContext,
         tone: selectedTone,
         maxLength,
-        provider: 'claude', // يفضل Claude للنصوص العربية
       });
 
       setGeneratedContent(result.content);
