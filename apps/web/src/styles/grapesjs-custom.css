@@ -1,0 +1,578 @@
+/*
+ * PUIUX Click Editor - Professional Custom Styles
+ * No default GrapesJS CSS conflicts
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+
+/* ========================================
+   Editor Container
+   ======================================== */
+
+.puiux-editor {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fa;
+  font-family: 'Cairo', sans-serif;
+  overflow: hidden;
+}
+
+/* ========================================
+   Toolbar
+   ======================================== */
+
+.puiux-toolbar {
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  z-index: 1000;
+}
+
+.toolbar-left,
+.toolbar-center,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toolbar-btn {
+  min-width: 44px;
+  height: 44px;
+  padding: 0 16px;
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  color: #495057;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'Cairo', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.toolbar-btn:hover {
+  background: #f8f9fa;
+  border-color: #4285f4;
+  color: #4285f4;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.15);
+}
+
+.toolbar-btn:active {
+  transform: translateY(0);
+}
+
+.toolbar-btn-primary {
+  background: #4285f4;
+  border-color: #4285f4;
+  color: #ffffff;
+}
+
+.toolbar-btn-primary:hover {
+  background: #3367d6;
+  border-color: #3367d6;
+  color: #ffffff;
+}
+
+.toolbar-btn-danger {
+  color: #dc3545;
+}
+
+.toolbar-btn-danger:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #ffffff;
+}
+
+/* Device Switcher */
+.device-switcher {
+  display: flex;
+  gap: 4px;
+  background: #f8f9fa;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.device-btn {
+  width: 48px;
+  height: 48px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #6c757d;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.device-btn:hover {
+  background: #ffffff;
+  color: #4285f4;
+}
+
+.device-btn.active {
+  background: #4285f4;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.25);
+}
+
+/* ========================================
+   Main Editor Area
+   ======================================== */
+
+.puiux-main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ========================================
+   Sidebars
+   ======================================== */
+
+.puiux-sidebar {
+  width: 300px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.puiux-sidebar-left {
+  border-right: 1px solid #dee2e6;
+}
+
+.puiux-sidebar-right {
+  border-left: 1px solid #dee2e6;
+}
+
+.sidebar-header {
+  height: 56px;
+  background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-tabs {
+  display: flex;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.sidebar-tab {
+  flex: 1;
+  height: 52px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #6c757d;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Cairo', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sidebar-tab:hover {
+  background: #ffffff;
+  color: #4285f4;
+}
+
+.sidebar-tab.active {
+  background: #ffffff;
+  color: #4285f4;
+  border-bottom-color: #4285f4;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* ========================================
+   Canvas
+   ======================================== */
+
+.puiux-canvas {
+  flex: 1;
+  background: #e9ecef;
+  overflow: auto;
+  position: relative;
+}
+
+#gjs-editor {
+  height: 100%;
+  width: 100%;
+}
+
+/* ========================================
+   GrapesJS Custom Overrides
+   ======================================== */
+
+/* Blocks */
+.gjs-block {
+  width: calc(50% - 10px);
+  min-height: 100px;
+  margin: 5px;
+  background: #ffffff;
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  padding: 16px;
+  cursor: grab;
+  transition: all 0.2s ease;
+  float: left;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.gjs-block:hover {
+  border-color: #4285f4;
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.15);
+  transform: translateY(-2px);
+}
+
+.gjs-block:active {
+  cursor: grabbing;
+}
+
+.gjs-block__media {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 12px;
+  color: #4285f4;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gjs-block-label {
+  font-size: 13px;
+  color: #495057;
+  font-weight: 600;
+  font-family: 'Cairo', sans-serif;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.gjs-block-category {
+  margin-bottom: 24px;
+}
+
+.gjs-block-category .gjs-title {
+  background: #f8f9fa;
+  color: #495057;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Cairo', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  cursor: pointer;
+}
+
+/* Style Manager */
+.gjs-sm-sector {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.gjs-sm-sector .gjs-sm-title {
+  background: #f8f9fa;
+  color: #495057;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Cairo', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.gjs-sm-sector .gjs-sm-title:hover {
+  background: #e9ecef;
+}
+
+.gjs-sm-sector.gjs-sm-open .gjs-sm-title {
+  background: #4285f4;
+  color: #ffffff;
+  border-bottom-color: #4285f4;
+}
+
+.gjs-sm-properties {
+  padding: 16px;
+}
+
+.gjs-sm-property {
+  margin-bottom: 16px;
+}
+
+.gjs-sm-label {
+  font-size: 13px;
+  color: #6c757d;
+  font-weight: 600;
+  font-family: 'Cairo', sans-serif;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.gjs-field input,
+.gjs-field select,
+.gjs-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Cairo', sans-serif;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.gjs-field input:focus,
+.gjs-field select:focus,
+.gjs-field textarea:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.gjs-field-color {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.gjs-field-color-picker {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 2px solid #ced4da;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gjs-field-color-picker:hover {
+  border-color: #4285f4;
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.15);
+}
+
+/* Layer Manager */
+.gjs-layer {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: 'Cairo', sans-serif;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gjs-layer:hover {
+  background: #f8f9fa;
+  border-color: #4285f4;
+}
+
+.gjs-layer.gjs-selected {
+  background: #e8f0fe;
+  border-color: #4285f4;
+  color: #4285f4;
+  font-weight: 700;
+}
+
+.gjs-layer__icon {
+  color: #6c757d;
+  margin-left: 8px;
+}
+
+/* Canvas */
+.gjs-cv-canvas {
+  background: #e9ecef;
+  padding: 30px;
+}
+
+.gjs-frame {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* Element Selection */
+.gjs-selected {
+  outline: 3px solid #4285f4 !important;
+  outline-offset: -3px;
+}
+
+.gjs-hovered {
+  outline: 2px dashed #adb5bd !important;
+  outline-offset: -2px;
+}
+
+/* Toolbar */
+.gjs-toolbar {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.gjs-toolbar-item {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gjs-toolbar-item:hover {
+  background: #f8f9fa;
+  color: #4285f4;
+}
+
+/* Modal */
+.gjs-mdl-container {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.gjs-mdl-dialog {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.gjs-mdl-header {
+  background: #4285f4;
+  color: #ffffff;
+  padding: 20px 24px;
+  border-bottom: none;
+}
+
+.gjs-mdl-title {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Cairo', sans-serif;
+}
+
+.gjs-mdl-content {
+  padding: 24px;
+  font-family: 'Cairo', sans-serif;
+  color: #495057;
+}
+
+.gjs-btn-prim {
+  background: #4285f4;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Cairo', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gjs-btn-prim:hover {
+  background: #3367d6;
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+/* Scrollbars */
+.sidebar-content::-webkit-scrollbar,
+.puiux-canvas::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.sidebar-content::-webkit-scrollbar-track,
+.puiux-canvas::-webkit-scrollbar-track {
+  background: #f8f9fa;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb,
+.puiux-canvas::-webkit-scrollbar-thumb {
+  background: #ced4da;
+  border-radius: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover,
+.puiux-canvas::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
+}
+
+/* Preview Mode */
+.gjs-pn-options {
+  display: none;
+}
+
+.gjs-cv-canvas.gjs-cv-canvas__preview {
+  background: #ffffff;
+  padding: 0;
+}
+
+.gjs-cv-canvas.gjs-cv-canvas__preview .gjs-frame {
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* Responsive */
+@media (max-width: 1280px) {
+  .puiux-sidebar {
+    width: 260px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .puiux-sidebar {
+    width: 220px;
+  }
+
+  .toolbar-btn span {
+    display: none;
+  }
+}
