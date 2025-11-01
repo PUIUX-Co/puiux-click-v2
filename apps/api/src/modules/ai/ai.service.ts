@@ -868,36 +868,28 @@ ${sectionsList}
       { id: 'about', type: 'about', title: 'من نحن', order: 2 },
     ];
 
+    // Reduced to 4 sections total (2 base + 2 industry-specific) to fit within 8000 token limit
+    // Users can add additional sections (gallery, testimonials, etc.) later via the editor
     const industrySections: Record<string, any[]> = {
       RESTAURANT: [
         { id: 'menu', type: 'products', title: 'قائمة الطعام', order: 3 },
-        { id: 'gallery', type: 'gallery', title: 'معرض الصور', order: 4 },
-        { id: 'testimonials', type: 'testimonials', title: 'آراء العملاء', order: 5 },
-        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 6 },
+        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 4 },
       ],
       DENTAL: [
         { id: 'services', type: 'services', title: 'الخدمات', order: 3 },
-        { id: 'team', type: 'team', title: 'فريق العمل', order: 4 },
-        { id: 'testimonials', type: 'testimonials', title: 'آراء المرضى', order: 5 },
-        { id: 'contact', type: 'contact', title: 'احجز موعد', order: 6 },
+        { id: 'contact', type: 'contact', title: 'احجز موعد', order: 4 },
       ],
       PORTFOLIO: [
-        { id: 'services', type: 'services', title: 'الخدمات', order: 3 },
-        { id: 'portfolio', type: 'gallery', title: 'أعمالنا', order: 4 },
-        { id: 'testimonials', type: 'testimonials', title: 'آراء العملاء', order: 5 },
-        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 6 },
+        { id: 'portfolio', type: 'gallery', title: 'أعمالنا', order: 3 },
+        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 4 },
       ],
       BUSINESS: [
         { id: 'services', type: 'services', title: 'خدماتنا', order: 3 },
-        { id: 'features', type: 'features', title: 'مميزاتنا', order: 4 },
-        { id: 'team', type: 'team', title: 'فريق العمل', order: 5 },
-        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 6 },
+        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 4 },
       ],
       STORE: [
         { id: 'products', type: 'products', title: 'المنتجات', order: 3 },
-        { id: 'categories', type: 'categories', title: 'التصنيفات', order: 4 },
-        { id: 'testimonials', type: 'testimonials', title: 'آراء العملاء', order: 5 },
-        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 6 },
+        { id: 'contact', type: 'contact', title: 'تواصل معنا', order: 4 },
       ],
     };
 
