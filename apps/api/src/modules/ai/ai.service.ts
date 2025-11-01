@@ -175,16 +175,34 @@ export class AiService {
    * This creates a professional, fully-functional website that's ready to be edited
    */
   async generateInitialSite(dto: GenerateInitialSiteDto): Promise<GeneratedWebsite> {
+    this.logger.log('='.repeat(60));
+    this.logger.log('🚀 Starting AI site generation...');
+    this.logger.log(`Business: ${dto.businessName}, Industry: ${dto.industry}`);
+
     // Check if AI generation is enabled
-    const aiGenerationEnabled = 
+    const aiGenerationEnabled =
       this.config.get<string>('ENABLE_AI_GENERATION') === 'true' ||
       this.config.get<boolean>('ENABLE_AI_GENERATION') === true;
-    
+
+    this.logger.log(`AI Generation Enabled: ${aiGenerationEnabled}`);
+
     if (!aiGenerationEnabled) {
+      this.logger.error('❌ AI generation is disabled in config');
       throw new BadRequestException('توليد المواقع بالذكاء الاصطناعي غير مفعل');
     }
 
+    // Log which AI services are available
+    const hasAnthropic = !!this.anthropic;
+    const hasOpenAI = !!this.openai;
+    const hasUnsplash = !!this.unsplashAccessKey;
+
+    this.logger.log(`Available AI Services:`);
+    this.logger.log(`  - Anthropic Claude: ${hasAnthropic ? '✅' : '❌'}`);
+    this.logger.log(`  - OpenAI: ${hasOpenAI ? '✅' : '❌'}`);
+    this.logger.log(`  - Unsplash: ${hasUnsplash ? '✅' : '❌'}`);
+
     if (!this.anthropic && !this.openai) {
+      this.logger.error('❌ No AI service available (neither Claude nor OpenAI)');
       throw new BadRequestException(
         'خدمات الذكاء الاصطناعي غير متاحة. يرجى التحقق من ANTHROPIC_API_KEY أو OPENAI_API_KEY في ملف .env',
       );
@@ -448,24 +466,59 @@ export class AiService {
     
     this.logger.debug(`Using Claude model: ${finalModel}`);
     
-    const response = await this.anthropic.messages.create({
-      model: finalModel,
-      max_tokens: Math.min(maxTokens * 2, 4096), // Approximate tokens from characters
-      temperature: validTemperature,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
+    try {
+      const response = await this.anthropic.messages.create({
+        model: finalModel,
+        max_tokens: Math.min(maxTokens * 2, 4096), // Approximate tokens from characters
+        temperature: validTemperature,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
 
-    const content = response.content[0];
-    if (content.type === 'text') {
-      return content.text.trim();
+      const content = response.content[0];
+      if (content.type === 'text') {
+        return content.text.trim();
+      }
+
+      throw new Error('Unexpected response format from Claude');
+    } catch (error: any) {
+      // Handle Anthropic SDK errors with clear messages
+      this.logger.error('Claude API error:', error);
+
+      if (error.status === 401 || error.message?.includes('invalid_api_key') || error.message?.includes('authentication')) {
+        throw new BadRequestException(
+          'ANTHROPIC_API_KEY غير صالح أو منتهي الصلاحية. يرجى التحقق من API key في ملف .env',
+        );
+      }
+
+      if (error.status === 429 || error.message?.includes('rate_limit')) {
+        throw new BadRequestException(
+          'تم تجاوز حد الاستخدام لـ Claude API. يرجى المحاولة لاحقاً أو ترقية خطتك.',
+        );
+      }
+
+      if (error.status === 400) {
+        throw new BadRequestException(
+          `خطأ في طلب Claude API: ${error.message || 'طلب غير صالح'}`,
+        );
+      }
+
+      // For network errors or other issues
+      if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message?.includes('network')) {
+        throw new Error(
+          `فشل الاتصال بـ Claude API: ${error.message}. يرجى التحقق من الاتصال بالإنترنت.`,
+        );
+      }
+
+      // Re-throw with more context
+      throw new Error(
+        `Claude API error: ${error.message || 'Unknown error'}`,
+      );
     }
-
-    throw new Error('Unexpected response format from Claude');
   }
 
   private async generateWithOpenAI(prompt: string, maxTokens: number): Promise<string> {
@@ -489,23 +542,64 @@ export class AiService {
 
     this.logger.debug(`Using temperature: ${validTemperature} (from config: ${tempValue})`);
 
-    const response = await this.openai.chat.completions.create({
-      model: this.config.get<string>('OPENAI_MODEL') || 'gpt-4o',
-      max_tokens: Math.min(maxTokens * 2, 4096),
-      temperature: validTemperature,
-      messages: [
-        {
-          role: 'system',
-          content: 'أنت كاتب محتوى محترف متخصص في كتابة المحتوى العربي الإبداعي.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: this.config.get<string>('OPENAI_MODEL') || 'gpt-4o',
+        max_tokens: Math.min(maxTokens * 2, 4096),
+        temperature: validTemperature,
+        messages: [
+          {
+            role: 'system',
+            content: 'أنت كاتب محتوى محترف متخصص في كتابة المحتوى العربي الإبداعي.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
 
-    return response.choices[0]?.message?.content?.trim() || '';
+      return response.choices[0]?.message?.content?.trim() || '';
+    } catch (error: any) {
+      // Handle OpenAI SDK errors with clear messages
+      this.logger.error('OpenAI API error:', error);
+
+      if (error.status === 401 || error.code === 'invalid_api_key' || error.message?.includes('Incorrect API key')) {
+        throw new BadRequestException(
+          'OPENAI_API_KEY غير صالح أو منتهي الصلاحية. يرجى التحقق من API key في ملف .env',
+        );
+      }
+
+      if (error.status === 429 || error.code === 'rate_limit_exceeded') {
+        throw new BadRequestException(
+          'تم تجاوز حد الاستخدام لـ OpenAI API. يرجى المحاولة لاحقاً أو ترقية خطتك.',
+        );
+      }
+
+      if (error.status === 400) {
+        throw new BadRequestException(
+          `خطأ في طلب OpenAI API: ${error.message || 'طلب غير صالح'}`,
+        );
+      }
+
+      if (error.status === 403) {
+        throw new BadRequestException(
+          'الوصول لـ OpenAI API مرفوض. يرجى التحقق من صلاحيات API key.',
+        );
+      }
+
+      // For network errors or other issues
+      if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message?.includes('network')) {
+        throw new Error(
+          `فشل الاتصال بـ OpenAI API: ${error.message}. يرجى التحقق من الاتصال بالإنترنت.`,
+        );
+      }
+
+      // Re-throw with more context
+      throw new Error(
+        `OpenAI API error: ${error.message || 'Unknown error'}`,
+      );
+    }
   }
 
   private buildImageQuery(

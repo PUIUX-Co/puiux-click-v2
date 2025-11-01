@@ -134,19 +134,33 @@ export class SitesService {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         const errorStack = error instanceof Error ? error.stack : undefined;
-        
-        // Check if error is due to configuration (AI disabled, missing API keys) - throw error, don't fallback
-        if (
+        const errorName = error instanceof Error ? error.constructor.name : 'Error';
+
+        this.logger.error(`AI generation failed for site ${site.id}: ${errorMessage}`);
+        this.logger.debug(`Error type: ${errorName}, Stack:`, errorStack);
+
+        // Check if error is due to configuration (AI disabled, missing/invalid API keys)
+        // These are critical errors that should NOT use fallback
+        const isConfigurationError =
+          errorName === 'BadRequestException' || // Our custom BadRequestException from AI service
           errorMessage.includes('غير مفعل') ||
           errorMessage.includes('غير متاحة') ||
+          errorMessage.includes('غير صالح') ||
+          errorMessage.includes('منتهي الصلاحية') ||
           errorMessage.includes('API key') ||
           errorMessage.includes('API_KEY') ||
-          errorMessage.includes('غير مكون')
-        ) {
+          errorMessage.includes('غير مكون') ||
+          errorMessage.includes('invalid_api_key') ||
+          errorMessage.includes('authentication') ||
+          errorMessage.includes('Incorrect API key') ||
+          errorMessage.includes('rate_limit') ||
+          errorMessage.includes('حد الاستخدام');
+
+        if (isConfigurationError) {
           // Configuration error - AI is required, don't use fallback
-          this.logger.error(`AI generation failed due to configuration error for site ${site.id}: ${errorMessage}`);
-          this.logger.debug(`Error stack:`, errorStack);
-          
+          this.logger.error(`Configuration error detected - NOT using fallback template`);
+          this.logger.error(`Error details: ${errorMessage}`);
+
           // Update site with error message in pages
           site = await this.prisma.site.update({
             where: { id: site.id },
@@ -154,11 +168,11 @@ export class SitesService {
               pages: {
                 error: true,
                 message: errorMessage,
-                note: 'يرجى التحقق من إعدادات AI API في ملف .env',
+                note: 'يرجى التحقق من إعدادات AI API في ملف .env والتأكد من صلاحية API keys',
               },
             },
           });
-          
+
           // Re-throw the error so user knows something went wrong
           throw error;
         }
