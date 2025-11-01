@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Site } from '@/lib/api/sites';
 import toast from 'react-hot-toast';
 import Script from 'next/script';
+import '@/styles/grapesjs-custom.css';
 
 interface GrapesJSEditorProps {
   site: Site;
@@ -94,6 +95,9 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
           },
         });
 
+        // Make editor accessible globally for AI Content Generator
+        (window as any).grapesEditorInstance = editorInstance;
+
         // Load site data
         if (site.pages) {
           try {
@@ -126,6 +130,8 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
       if (editor) {
         editor.destroy();
       }
+      // Cleanup global reference
+      delete (window as any).grapesEditorInstance;
     };
   }, []);
 
