@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import type { Site } from '@/lib/api/sites';
 import toast from 'react-hot-toast';
 import Script from 'next/script';
+
+// Import GrapesJS base CSS - CRITICAL for proper functionality
+import 'grapesjs/dist/css/grapes.min.css';
 import '@/styles/grapesjs-custom.css';
 
 interface GrapesJSEditorProps {
@@ -28,9 +31,6 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
           width: 'auto',
           fromElement: false,
           storageManager: false,
-
-          // إلغاء استيراد CSS الافتراضي
-          baseCss: '',
 
           canvas: {
             styles: [
@@ -62,7 +62,15 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
               {
                 name: 'النصوص',
                 open: false,
-                buildProps: ['font-family', 'font-size', 'font-weight', 'color', 'text-align', 'line-height'],
+                buildProps: [
+                  'font-family',
+                  'font-size',
+                  'font-weight',
+                  'color',
+                  'text-align',
+                  'line-height',
+                  'letter-spacing',
+                ],
               },
               {
                 name: 'الخلفية',
@@ -77,7 +85,19 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
               {
                 name: 'العرض',
                 open: false,
-                buildProps: ['display', 'flex-direction', 'justify-content', 'align-items', 'gap'],
+                buildProps: [
+                  'display',
+                  'flex-direction',
+                  'justify-content',
+                  'align-items',
+                  'gap',
+                  'position',
+                  'top',
+                  'right',
+                  'bottom',
+                  'left',
+                  'z-index',
+                ],
               },
             ],
           },
@@ -92,6 +112,11 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
               { id: 'tablet', name: 'Tablet', width: '768px', widthMedia: '768px' },
               { id: 'mobile', name: 'Mobile', width: '375px', widthMedia: '480px' },
             ],
+          },
+
+          // Panels configuration
+          panels: {
+            defaults: [],
           },
         });
 
@@ -173,10 +198,10 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
     <>
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" />
 
-      <div className="puiux-editor">
+      <div className="puiux-editor-wrapper">
         {/* Top Toolbar */}
         <div className="puiux-toolbar">
-          <div className="toolbar-left">
+          <div className="toolbar-section toolbar-left">
             <button className="toolbar-btn" onClick={handleUndo} title="تراجع">
               <i className="fas fa-undo"></i>
             </button>
@@ -188,7 +213,7 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
             </button>
           </div>
 
-          <div className="toolbar-center">
+          <div className="toolbar-section toolbar-center">
             <div className="device-switcher">
               <button
                 className={`device-btn ${currentDevice === 'desktop' ? 'active' : ''}`}
@@ -214,7 +239,7 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
             </div>
           </div>
 
-          <div className="toolbar-right">
+          <div className="toolbar-section toolbar-right">
             <button className="toolbar-btn" onClick={handlePreview} title="معاينة">
               <i className="fas fa-eye"></i>
             </button>
@@ -226,42 +251,48 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
         </div>
 
         {/* Main Editor */}
-        <div className="puiux-main">
-          {/* Left Sidebar */}
+        <div className="puiux-editor-main">
+          {/* Left Sidebar - Blocks */}
           <div className="puiux-sidebar puiux-sidebar-left">
-            <div className="sidebar-header">
+            <div className="puiux-sidebar-header">
               <i className="fas fa-th-large"></i>
               <span>المكونات</span>
             </div>
-            <div id="blocks-panel" className="sidebar-content"></div>
+            <div id="blocks-panel" className="puiux-sidebar-content"></div>
           </div>
 
           {/* Canvas */}
-          <div className="puiux-canvas">
+          <div className="puiux-canvas-area">
             <div ref={editorRef} id="gjs-editor"></div>
           </div>
 
-          {/* Right Sidebar */}
+          {/* Right Sidebar - Styles & Layers */}
           <div className="puiux-sidebar puiux-sidebar-right">
-            <div className="sidebar-tabs">
+            <div className="puiux-sidebar-tabs">
               <button
-                className={`sidebar-tab ${activeTab === 'styles' ? 'active' : ''}`}
+                className={`puiux-sidebar-tab ${activeTab === 'styles' ? 'active' : ''}`}
                 onClick={() => setActiveTab('styles')}
               >
                 <i className="fas fa-paint-brush"></i>
                 <span>التصميم</span>
               </button>
               <button
-                className={`sidebar-tab ${activeTab === 'layers' ? 'active' : ''}`}
+                className={`puiux-sidebar-tab ${activeTab === 'layers' ? 'active' : ''}`}
                 onClick={() => setActiveTab('layers')}
               >
                 <i className="fas fa-layer-group"></i>
                 <span>الطبقات</span>
               </button>
             </div>
-            <div className="sidebar-content">
-              <div id="styles-panel" style={{ display: activeTab === 'styles' ? 'block' : 'none' }}></div>
-              <div id="layers-panel" style={{ display: activeTab === 'layers' ? 'block' : 'none' }}></div>
+            <div className="puiux-sidebar-content">
+              <div
+                id="styles-panel"
+                style={{ display: activeTab === 'styles' ? 'block' : 'none' }}
+              ></div>
+              <div
+                id="layers-panel"
+                style={{ display: activeTab === 'layers' ? 'block' : 'none' }}
+              ></div>
             </div>
           </div>
         </div>
