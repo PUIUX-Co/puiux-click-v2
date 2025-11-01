@@ -495,9 +495,15 @@ export class AiService {
     this.logger.debug(`Using Claude model: ${finalModel}`);
     
     try {
+      // Claude 4 and 3.5 Sonnet support up to 8192 output tokens
+      // For site generation, we need more tokens to accommodate full HTML/CSS/JS
+      const maxOutputTokens = Math.min(maxTokens, 8192);
+
+      this.logger.debug(`Using max_tokens: ${maxOutputTokens}`);
+
       const response = await this.anthropic.messages.create({
         model: finalModel,
-        max_tokens: Math.min(maxTokens * 2, 4096), // Approximate tokens from characters
+        max_tokens: maxOutputTokens,
         temperature: validTemperature,
         messages: [
           {
@@ -571,9 +577,15 @@ export class AiService {
     this.logger.debug(`Using temperature: ${validTemperature} (from config: ${tempValue})`);
 
     try {
+      // GPT-4o supports up to 16384 output tokens
+      // For site generation, we need more tokens
+      const maxOutputTokens = Math.min(maxTokens, 16384);
+
+      this.logger.debug(`Using max_tokens: ${maxOutputTokens}`);
+
       const response = await this.openai.chat.completions.create({
         model: this.config.get<string>('OPENAI_MODEL') || 'gpt-4o',
-        max_tokens: Math.min(maxTokens * 2, 4096),
+        max_tokens: maxOutputTokens,
         temperature: validTemperature,
         messages: [
           {
