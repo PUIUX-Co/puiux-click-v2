@@ -518,9 +518,9 @@ export class AiService {
     this.logger.debug(`Using Claude model: ${finalModel}`);
     
     try {
-      // Claude 4 and 3.5 Sonnet support up to 8192 output tokens
+      // Claude 4 Sonnet supports up to 16384 output tokens
       // For site generation, we need more tokens to accommodate full HTML/CSS/JS
-      const maxOutputTokens = Math.min(maxTokens, 8192);
+      const maxOutputTokens = Math.min(maxTokens, 16384);
 
       this.logger.debug(`Using max_tokens: ${maxOutputTokens}`);
 
