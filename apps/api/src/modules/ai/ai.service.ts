@@ -279,37 +279,57 @@ export class AiService {
         throw new Error('Empty response from AI service');
       }
 
-      // Parse the JSON response - handle markdown code blocks
+      // Parse the JSON response - handle markdown code blocks and truncation
       let generated: any;
+
+      // Log full response length for debugging
+      this.logger.debug(`📊 Response length: ${content.length} characters`);
+
       try {
         // Try direct JSON parsing first
         generated = JSON.parse(content);
         this.logger.log('✅ Successfully parsed JSON directly');
       } catch (parseError) {
         // If direct parsing fails, try to extract JSON from markdown code blocks
-        this.logger.warn('⚠️ Direct JSON parsing failed, trying to extract from markdown...');
+        this.logger.warn('⚠️  Direct JSON parsing failed, trying to extract from markdown...');
         this.logger.debug('Parse error:', (parseError as Error).message);
 
-        // Remove any markdown code block delimiters (```json, ```, etc.)
+        // Step 1: Remove markdown code block delimiters
         let cleanedContent = content.trim();
 
-        // Remove leading ```json or ```
-        cleanedContent = cleanedContent.replace(/^```(?:json)?\s*/i, '');
-        // Remove trailing ```
-        cleanedContent = cleanedContent.replace(/```\s*$/, '');
-        // Trim again
+        // Remove all variations of markdown code blocks
+        // Match ```json, ```, or ``` at start
+        cleanedContent = cleanedContent.replace(/^```(?:json|JSON)?\s*/gm, '');
+        // Remove ``` at end
+        cleanedContent = cleanedContent.replace(/```\s*$/gm, '');
+        // Trim
         cleanedContent = cleanedContent.trim();
 
-        this.logger.debug(`📄 Cleaned content (first 200 chars): ${cleanedContent.substring(0, 200)}`);
+        this.logger.debug(`📄 Cleaned content (first 300 chars): ${cleanedContent.substring(0, 300)}`);
+        this.logger.debug(`📄 Cleaned content (last 100 chars): ${cleanedContent.substring(Math.max(0, cleanedContent.length - 100))}`);
 
         try {
           // Try parsing cleaned content
           generated = JSON.parse(cleanedContent);
           this.logger.log('✅ Successfully parsed JSON after removing markdown delimiters');
         } catch (cleanError) {
+          this.logger.warn('⚠️  Cleaned JSON parsing failed');
           this.logger.debug('Cleaned parse error:', (cleanError as Error).message);
 
-          // Last resort: try to extract JSON object using regex
+          // Check if JSON is truncated (missing closing braces)
+          const openBraces = (cleanedContent.match(/\{/g) || []).length;
+          const closeBraces = (cleanedContent.match(/\}/g) || []).length;
+
+          if (openBraces > closeBraces) {
+            this.logger.error(`❌ JSON appears truncated: ${openBraces} opening braces, ${closeBraces} closing braces`);
+            this.logger.error('💡 This indicates max_tokens is too low. Response was cut off mid-JSON.');
+            throw new Error(
+              'AI response was truncated. The response exceeded the maximum token limit. Please try again or reduce the complexity of the request.',
+            );
+          }
+
+          // Last resort: try to extract JSON object using greedy regex
+          // Match from first { to last }
           const jsonObjectMatch = cleanedContent.match(/(\{[\s\S]*\})/);
           if (jsonObjectMatch && jsonObjectMatch[1]) {
             this.logger.debug('Trying to parse extracted JSON object...');
@@ -318,7 +338,8 @@ export class AiService {
               this.logger.log('✅ Successfully parsed extracted JSON object');
             } catch (extractError) {
               this.logger.error('❌ Unable to parse AI response as JSON');
-              this.logger.error('Response preview:', content.substring(0, 1000));
+              this.logger.error('Response preview (first 1000 chars):', content.substring(0, 1000));
+              this.logger.error('Response preview (last 500 chars):', content.substring(Math.max(0, content.length - 500)));
               throw new Error(
                 'Unable to parse AI response as JSON. Response format may be invalid.',
               );
