@@ -284,20 +284,48 @@ export class AiService {
       try {
         // Try direct JSON parsing first
         generated = JSON.parse(content);
+        this.logger.log('✅ Successfully parsed JSON directly');
       } catch (parseError) {
         // If direct parsing fails, try to extract JSON from markdown code blocks
-        this.logger.warn('Direct JSON parsing failed, trying to extract from markdown...');
-        
-        // Extract JSON from markdown code blocks (```json ... ```)
-        const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-        if (jsonMatch && jsonMatch[1]) {
-          generated = JSON.parse(jsonMatch[1].trim());
-        } else {
-          // Try to extract JSON object from text
-          const jsonObjectMatch = content.match(/\{[\s\S]*\}/);
-          if (jsonObjectMatch && jsonObjectMatch[0]) {
-            generated = JSON.parse(jsonObjectMatch[0]);
+        this.logger.warn('⚠️ Direct JSON parsing failed, trying to extract from markdown...');
+        this.logger.debug('Parse error:', (parseError as Error).message);
+
+        // Remove any markdown code block delimiters (```json, ```, etc.)
+        let cleanedContent = content.trim();
+
+        // Remove leading ```json or ```
+        cleanedContent = cleanedContent.replace(/^```(?:json)?\s*/i, '');
+        // Remove trailing ```
+        cleanedContent = cleanedContent.replace(/```\s*$/, '');
+        // Trim again
+        cleanedContent = cleanedContent.trim();
+
+        this.logger.debug(`📄 Cleaned content (first 200 chars): ${cleanedContent.substring(0, 200)}`);
+
+        try {
+          // Try parsing cleaned content
+          generated = JSON.parse(cleanedContent);
+          this.logger.log('✅ Successfully parsed JSON after removing markdown delimiters');
+        } catch (cleanError) {
+          this.logger.debug('Cleaned parse error:', (cleanError as Error).message);
+
+          // Last resort: try to extract JSON object using regex
+          const jsonObjectMatch = cleanedContent.match(/(\{[\s\S]*\})/);
+          if (jsonObjectMatch && jsonObjectMatch[1]) {
+            this.logger.debug('Trying to parse extracted JSON object...');
+            try {
+              generated = JSON.parse(jsonObjectMatch[1]);
+              this.logger.log('✅ Successfully parsed extracted JSON object');
+            } catch (extractError) {
+              this.logger.error('❌ Unable to parse AI response as JSON');
+              this.logger.error('Response preview:', content.substring(0, 1000));
+              throw new Error(
+                'Unable to parse AI response as JSON. Response format may be invalid.',
+              );
+            }
           } else {
+            this.logger.error('❌ Unable to find JSON object in response');
+            this.logger.error('Response preview:', content.substring(0, 1000));
             throw new Error(
               'Unable to parse AI response as JSON. Response format may be invalid.',
             );
