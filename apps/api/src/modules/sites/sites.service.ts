@@ -137,10 +137,7 @@ export class SitesService {
 
         // Fallback to simple pages structure - always succeed with fallback
         try {
-          const fallbackPages = this.generateInitialPages(
-            createSiteDto.industry,
-            createSiteDto,
-          );
+          const fallbackPages = this.generateInitialPages(createSiteDto);
 
           site = await this.prisma.site.update({
             where: { id: site.id },
@@ -411,10 +408,10 @@ export class SitesService {
   }
 
   /**
-   * Generate initial pages structure based on industry
+   * Generate initial pages structure
    * Returns GrapesJS-compatible format
    */
-  private generateInitialPages(industry: Industry, dto: CreateSiteDto): any {
+  private generateInitialPages(dto: CreateSiteDto): any {
     const { primary, secondary, accent } = dto.colorPalette as any;
 
     // Create a professional landing page with GrapesJS format
