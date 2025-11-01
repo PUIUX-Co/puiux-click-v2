@@ -46,8 +46,15 @@ apiClient.interceptors.response.use(
           { withCredentials: true }
         );
 
-        // Save new access token
+        // Save new access token to localStorage and cookie
         localStorage.setItem('accessToken', data.accessToken);
+        
+        // Also set cookie for middleware
+        if (typeof document !== 'undefined') {
+          const expires = new Date();
+          expires.setMinutes(expires.getMinutes() + 15);
+          document.cookie = `accessToken=${data.accessToken}; path=/; expires=${expires.toUTCString()}; SameSite=Strict`;
+        }
 
         // Retry original request with new token
         if (originalRequest.headers) {
@@ -56,9 +63,14 @@ apiClient.interceptors.response.use(
 
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh failed - clear tokens and redirect to login
+        // Refresh failed - clear tokens and cookie, then redirect to login
         localStorage.removeItem('accessToken');
         localStorage.removeItem('user');
+        
+        // Clear cookie as well
+        if (typeof document !== 'undefined') {
+          document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict';
+        }
 
         // Redirect to login
         if (typeof window !== 'undefined') {

@@ -49,92 +49,124 @@ export class SitesService {
     organizationId: string,
     createSiteDto: CreateSiteDto,
   ): Promise<SiteResponseDto> {
-    // 1. Check organization limits
-    await this.checkOrganizationLimits(organizationId);
-
-    // 2. Generate unique slug
-    const slug = await this.generateUniqueSlug(createSiteDto.businessName);
-
-    // 3. Assign template based on industry if not provided
-    const templateId =
-      createSiteDto.templateId ||
-      this.INDUSTRY_TEMPLATES[createSiteDto.industry];
-
-    // 4. Create site record first (with empty pages)
-    let site: Site;
     try {
-      site = await this.prisma.site.create({
-        data: {
-          name: createSiteDto.name,
-          slug,
-          organizationId,
-          userId,
+      // 1. Check organization limits
+      await this.checkOrganizationLimits(organizationId);
+
+      // 2. Generate unique slug
+      const slug = await this.generateUniqueSlug(createSiteDto.businessName);
+
+      // 3. Assign template based on industry if not provided
+      const templateId =
+        createSiteDto.templateId ||
+        this.INDUSTRY_TEMPLATES[createSiteDto.industry] ||
+        'template-default-01'; // Fallback template
+
+      // 4. Create site record first (with empty pages)
+      let site: Site;
+      try {
+        site = await this.prisma.site.create({
+          data: {
+            name: createSiteDto.name,
+            slug,
+            organization: {
+              connect: { id: organizationId },
+            },
+            user: {
+              connect: { id: userId },
+            },
+            industry: createSiteDto.industry,
+            templateId,
+            businessName: createSiteDto.businessName,
+            description: createSiteDto.description,
+            phone: createSiteDto.phone,
+            email: createSiteDto.email,
+            address: createSiteDto.address,
+            colorPalette: createSiteDto.colorPalette as unknown as Prisma.InputJsonValue,
+            pages: {}, // Empty initially
+            publishUrl: `https://${slug}.puiuxclick.com`,
+          },
+        });
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          throw new ConflictException('الموقع بهذا الاسم موجود مسبقاً');
+        }
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        this.logger.error(`Failed to create site record: ${errorMessage}`, errorStack);
+        throw error;
+      }
+
+      // 5. Generate complete website with AI in background
+      try {
+        this.logger.log(`Generating initial site with AI for site ${site.id}`);
+
+        const generatedSite = await this.aiService.generateInitialSite({
           industry: createSiteDto.industry,
-          templateId,
           businessName: createSiteDto.businessName,
           description: createSiteDto.description,
-          phone: createSiteDto.phone,
-          email: createSiteDto.email,
-          address: createSiteDto.address,
-          colorPalette: createSiteDto.colorPalette as unknown as Prisma.InputJsonValue,
-          pages: {}, // Empty initially
-          publishUrl: `https://${slug}.puiuxclick.com`,
-        },
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw new ConflictException('الموقع بهذا الاسم موجود مسبقاً');
+          colorPalette: createSiteDto.colorPalette,
+          contactInfo: {
+            phone: createSiteDto.phone,
+            email: createSiteDto.email,
+            address: createSiteDto.address,
+          },
+          language: 'ar', // Default to Arabic
+        });
+
+        // 6. Convert AI-generated HTML/CSS to GrapesJS format
+        const grapesJSPages = this.convertToGrapesJSFormat(generatedSite);
+
+        // 7. Update site with generated pages
+        site = await this.prisma.site.update({
+          where: { id: site.id },
+          data: { pages: grapesJSPages },
+        });
+
+        this.logger.log(`Successfully generated site ${site.id} with AI`);
+      } catch (error) {
+        // If AI generation fails, keep site with simple structure
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        
+        this.logger.warn(`AI generation failed for site ${site.id}, using fallback structure`);
+        this.logger.debug(`AI generation error: ${errorMessage}`, errorStack);
+
+        // Fallback to simple pages structure - always succeed with fallback
+        try {
+          const fallbackPages = this.generateInitialPages(
+            createSiteDto.industry,
+            createSiteDto,
+          );
+
+          site = await this.prisma.site.update({
+            where: { id: site.id },
+            data: { pages: fallbackPages },
+          });
+
+          this.logger.log(`Site ${site.id} created with fallback structure`);
+        } catch (fallbackError) {
+          // Even fallback failed - log but don't fail site creation
+          const fallbackErrorMessage = 
+            fallbackError instanceof Error ? fallbackError.message : 'Unknown error';
+          this.logger.error(
+            `Fallback structure update failed for site ${site.id}: ${fallbackErrorMessage}`,
+          );
+          // Continue anyway - site is already created, just with empty pages
+        }
       }
+
+      // Return the site after all operations complete successfully
+      return this.toResponseDto(site);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to create site: ${errorMessage}`, errorStack);
       throw error;
     }
-
-    // 5. Generate complete website with AI in background
-    try {
-      this.logger.log(`Generating initial site with AI for site ${site.id}`);
-
-      const generatedSite = await this.aiService.generateInitialSite({
-        industry: createSiteDto.industry,
-        businessName: createSiteDto.businessName,
-        description: createSiteDto.description,
-        colorPalette: createSiteDto.colorPalette,
-        contactInfo: {
-          phone: createSiteDto.phone,
-          email: createSiteDto.email,
-          address: createSiteDto.address,
-        },
-        language: 'ar', // Default to Arabic
-      });
-
-      // 6. Convert AI-generated HTML/CSS to GrapesJS format
-      const grapesJSPages = this.convertToGrapesJSFormat(generatedSite);
-
-      // 7. Update site with generated pages
-      site = await this.prisma.site.update({
-        where: { id: site.id },
-        data: { pages: grapesJSPages },
-      });
-
-      this.logger.log(`Successfully generated site ${site.id} with AI`);
-    } catch (error) {
-      // If AI generation fails, keep site with simple structure
-      this.logger.error(`AI generation failed for site ${site.id}:`, error);
-
-      // Fallback to simple pages structure
-      const fallbackPages = this.generateInitialPages(
-        createSiteDto.industry,
-        createSiteDto,
-      );
-
-      site = await this.prisma.site.update({
-        where: { id: site.id },
-        data: { pages: fallbackPages },
-      });
-    }
-
-    return this.toResponseDto(site);
   }
 
   /**

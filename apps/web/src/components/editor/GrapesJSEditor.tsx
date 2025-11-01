@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Site } from '@/lib/api/sites';
 import toast from 'react-hot-toast';
-import dynamic from 'next/dynamic';
 
 // GrapesJS CSS imports (will be imported in useEffect to avoid SSR issues)
 import 'grapesjs/dist/css/grapes.min.css';

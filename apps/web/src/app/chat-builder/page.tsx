@@ -54,7 +54,7 @@ export default function ChatBuilderPage() {
   // Auth check
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push('/auth/login?redirect=/chat-builder-new');
+      router.push('/login?redirect=/chat-builder');
     }
   }, [isAuthenticated, router]);
 

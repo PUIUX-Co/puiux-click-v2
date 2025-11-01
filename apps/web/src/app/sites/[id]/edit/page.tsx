@@ -8,8 +8,20 @@ import { Loader2, ArrowLeft, Save, Eye, Sparkles, Globe, GlobeLock, Wand2 } from
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import GrapesJSEditor from '@/components/editor/GrapesJSEditor';
-import AIContentGenerator from '@/components/editor/AIContentGenerator';
+import dynamic from 'next/dynamic';
+
+const GrapesJSEditor = dynamic(() => import('@/components/editor/GrapesJSEditor'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  ),
+});
+
+const AIContentGenerator = dynamic(() => import('@/components/editor/AIContentGenerator'), {
+  ssr: false,
+});
 
 export default function EditSitePage() {
   const params = useParams();

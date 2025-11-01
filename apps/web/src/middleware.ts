@@ -31,9 +31,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect to dashboard if accessing auth routes with token
+  // Redirect to dashboard (or redirect param if exists) if accessing auth routes with token
   if (isAuthRoute && accessToken) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    const redirectParam = request.nextUrl.searchParams.get('redirect');
+    const redirectPath = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/dashboard';
+    return NextResponse.redirect(new URL(redirectPath, request.url));
   }
 
   return NextResponse.next();

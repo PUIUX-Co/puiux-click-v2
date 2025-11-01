@@ -40,17 +40,22 @@ export class SitesController {
     message: string;
     data: SiteResponseDto;
   }> {
-    const site = await this.sitesService.create(
-      req.user.sub,
-      req.user.organizationId,
-      createSiteDto,
-    );
+    try {
+      const site = await this.sitesService.create(
+        req.user.id || req.user.sub, // Support both id and sub for backwards compatibility
+        req.user.organizationId,
+        createSiteDto,
+      );
 
-    return {
-      success: true,
-      message: 'تم إنشاء الموقع بنجاح',
-      data: site,
-    };
+      return {
+        success: true,
+        message: 'تم إنشاء الموقع بنجاح',
+        data: site,
+      };
+    } catch (error) {
+      // Re-throw to be caught by exception filter
+      throw error;
+    }
   }
 
   /**

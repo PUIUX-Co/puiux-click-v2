@@ -49,6 +49,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
+      // Clear cookie as well
+      if (typeof document !== 'undefined') {
+        document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict';
+      }
     }
   }, []);
 
@@ -64,8 +68,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           icon: '🎉',
           duration: 4000,
         });
+        
+        // Get redirect parameter from URL if exists
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectPath = urlParams.get('redirect') || '/dashboard';
+        
         // Use window.location for full page reload to ensure fresh state
-        window.location.href = '/dashboard';
+        window.location.href = redirectPath;
       } catch (error: any) {
         const message =
           error.response?.data?.message ||
@@ -92,8 +101,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           icon: '👋',
           duration: 3000,
         });
+        
+        // Get redirect parameter from URL if exists
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectPath = urlParams.get('redirect') || '/dashboard';
+        
         // Use window.location for full page reload to ensure fresh state
-        window.location.href = '/dashboard';
+        window.location.href = redirectPath;
       } catch (error: any) {
         const message =
           error.response?.data?.message ||

@@ -153,12 +153,18 @@ export class AiService {
    */
   async generateInitialSite(dto: GenerateInitialSiteDto): Promise<GeneratedWebsite> {
     // Check if AI generation is enabled
-    if (!this.config.get<boolean>('ENABLE_AI_GENERATION')) {
+    const aiGenerationEnabled = 
+      this.config.get<string>('ENABLE_AI_GENERATION') === 'true' ||
+      this.config.get<boolean>('ENABLE_AI_GENERATION') === true;
+    
+    if (!aiGenerationEnabled) {
       throw new BadRequestException('توليد المواقع بالذكاء الاصطناعي غير مفعل');
     }
 
     if (!this.anthropic && !this.openai) {
-      throw new BadRequestException('خدمات الذكاء الاصطناعي غير متاحة');
+      throw new BadRequestException(
+        'خدمات الذكاء الاصطناعي غير متاحة. يرجى التحقق من ANTHROPIC_API_KEY أو OPENAI_API_KEY في ملف .env',
+      );
     }
 
     try {
@@ -168,16 +174,52 @@ export class AiService {
       // Build comprehensive prompt for site generation
       const prompt = this.buildSiteGenerationPrompt(dto, isRTL);
 
+      this.logger.log('Generating site with AI...');
+
       // Generate with Claude (preferred for better quality)
       const content = this.anthropic
         ? await this.generateWithClaude(prompt, 8000)
         : await this.generateWithOpenAI(prompt, 8000);
 
-      // Parse the JSON response
-      const generated = JSON.parse(content);
+      if (!content || content.trim().length === 0) {
+        throw new Error('Empty response from AI service');
+      }
+
+      // Parse the JSON response - handle markdown code blocks
+      let generated: any;
+      try {
+        // Try direct JSON parsing first
+        generated = JSON.parse(content);
+      } catch (parseError) {
+        // If direct parsing fails, try to extract JSON from markdown code blocks
+        this.logger.warn('Direct JSON parsing failed, trying to extract from markdown...');
+        
+        // Extract JSON from markdown code blocks (```json ... ```)
+        const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch && jsonMatch[1]) {
+          generated = JSON.parse(jsonMatch[1].trim());
+        } else {
+          // Try to extract JSON object from text
+          const jsonObjectMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonObjectMatch && jsonObjectMatch[0]) {
+            generated = JSON.parse(jsonObjectMatch[0]);
+          } else {
+            throw new Error(
+              'Unable to parse AI response as JSON. Response format may be invalid.',
+            );
+          }
+        }
+      }
+
+      // Validate parsed JSON structure
+      if (!generated || typeof generated !== 'object') {
+        throw new Error('Invalid JSON structure from AI response');
+      }
 
       // Get sections structure based on industry
       const sections = this.getSectionsForIndustry(dto.industry, dto.businessName);
+
+      this.logger.log('Successfully generated site with AI');
 
       return {
         html: generated.html || '',
@@ -186,9 +228,27 @@ export class AiService {
         sections,
       };
     } catch (error) {
-      this.logger.error('Failed to generate initial site:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
+      this.logger.error('Failed to generate initial site:', errorMessage);
+      this.logger.debug('Error stack:', errorStack);
+
+      // Provide more specific error messages
+      if (errorMessage.includes('parse') || errorMessage.includes('JSON')) {
+        throw new BadRequestException(
+          'فشل في معالجة استجابة الذكاء الاصطناعي. يرجى المحاولة مرة أخرى.',
+        );
+      }
+
+      if (errorMessage.includes('API key') || errorMessage.includes('unauthorized')) {
+        throw new BadRequestException(
+          'مفتاح API غير صحيح أو منتهي الصلاحية. يرجى التحقق من مفاتيح API في ملف .env',
+        );
+      }
+
       throw new BadRequestException(
-        'فشل في توليد الموقع. يرجى المحاولة مرة أخرى.',
+        `فشل في توليد الموقع: ${errorMessage}. يرجى المحاولة مرة أخرى.`,
       );
     }
   }
