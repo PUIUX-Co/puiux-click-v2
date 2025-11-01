@@ -105,6 +105,42 @@ export const industries = [
   },
 ] as const;
 
+// Section preset configurations
+export const sectionPresets = {
+  quick: { count: 3, label: 'سريع', icon: '🚀', description: 'الأساسيات فقط' },
+  recommended: { count: 4, label: 'موصى به', icon: '⚡', description: 'متوازن ومثالي' },
+  complete: { count: 5, label: 'كامل', icon: '🌟', description: 'جميع الأقسام' },
+};
+
+// Smart recommendations for each industry (auto-selected by default)
+export const smartRecommendations: Record<IndustryType, string[]> = {
+  RESTAURANT: ['hero', 'about', 'menu', 'contact'],
+  DENTAL: ['hero', 'about', 'services', 'contact'],
+  PORTFOLIO: ['hero', 'about', 'portfolio', 'contact'],
+  BUSINESS: ['hero', 'about', 'services', 'contact'],
+  STORE: ['hero', 'about', 'products', 'contact'],
+};
+
+// Section dependencies and smart suggestions
+export const sectionSuggestions: Record<string, { recommendsWith: string[]; message: string }> = {
+  testimonials: {
+    recommendsWith: ['services', 'products', 'menu'],
+    message: 'آراء العملاء تعمل بشكل أفضل مع عرض الخدمات أو المنتجات',
+  },
+  gallery: {
+    recommendsWith: ['menu', 'products', 'portfolio'],
+    message: 'معرض الصور مثالي لعرض أعمالك أو منتجاتك بشكل مرئي',
+  },
+  team: {
+    recommendsWith: ['about', 'services'],
+    message: 'فريق العمل يعزز الثقة ويكمل قسم "من نحن"',
+  },
+  categories: {
+    recommendsWith: ['products'],
+    message: 'التصنيفات تساعد في تنظيم المنتجات وتسهيل التصفح',
+  },
+};
+
 // Available sections for each industry
 export const availableSections: Record<IndustryType, Array<{ id: string; title: string; description: string; required: boolean }>> = {
   RESTAURANT: [
