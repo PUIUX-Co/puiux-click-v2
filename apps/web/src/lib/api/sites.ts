@@ -1,10 +1,24 @@
 import { apiClient } from './client';
-import type { Industry, SiteStatus } from '@prisma/client';
 
 /**
  * Sites API Client
  * Handles all site-related API calls
  */
+
+// Enums (matching Prisma schema)
+export enum Industry {
+  RESTAURANT = 'RESTAURANT',
+  DENTAL = 'DENTAL',
+  PORTFOLIO = 'PORTFOLIO',
+  BUSINESS = 'BUSINESS',
+  STORE = 'STORE',
+}
+
+export enum SiteStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED',
+}
 
 // Types
 export interface ColorPalette {

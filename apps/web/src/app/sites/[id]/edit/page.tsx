@@ -26,7 +26,7 @@ const AIContentGenerator = dynamic(() => import('@/components/editor/AIContentGe
 export default function EditSitePage() {
   const params = useParams();
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [site, setSite] = useState<Site | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

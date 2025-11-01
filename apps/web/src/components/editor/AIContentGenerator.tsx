@@ -126,7 +126,6 @@ export default function AIContentGenerator({
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const selectedOption = contentTypes.find((ct) => ct.type === selectedType)!;
-  const Icon = selectedOption.icon;
 
   // Check if this content type should generate a full section
   const shouldGenerateSection = selectedType === ContentType.ABOUT_SECTION;
