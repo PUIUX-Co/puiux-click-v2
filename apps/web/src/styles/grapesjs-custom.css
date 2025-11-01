@@ -1,158 +1,273 @@
 /**
- * PUIUX Click Editor - Custom GrapesJS Styles
- * Professional, modern, RTL-friendly editor with proper visibility
+ * PUIUX Click - Professional GrapesJS Editor Styles
+ * Minimalist, Clean, Modern Design
  */
 
 /* ============================================================================
-   Editor Container & Global Reset
+   Editor Wrapper & Layout
    ============================================================================ */
 
-.grapesjs-editor-container {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Cairo', sans-serif;
-  background: #f7fafc;
+.grapesjs-editor-wrapper {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+}
+
+/* Top Bar */
+.editor-topbar {
+  height: 60px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  z-index: 100;
+}
+
+.panel__top-left,
+.panel__top-center,
+.panel__top-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.panel__top-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Main Editor Area */
+.editor-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebars */
+.editor-sidebar {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.editor-sidebar-left {
+  width: 280px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.editor-sidebar-right {
+  width: 300px;
+  border-left: 1px solid #e5e7eb;
+}
+
+.panel__left-tabs,
+.panel__right-tabs {
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  padding: 8px;
+  gap: 4px;
+}
+
+/* Canvas */
+.editor-canvas {
+  flex: 1;
+  background: #f0f4f8;
+  background-image:
+    radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 0);
+  background-size: 20px 20px;
+  position: relative;
+  overflow: auto;
 }
 
 #gjs {
-  font-family: inherit;
-  direction: ltr;
-}
-
-/* Reset GrapesJS default positioning */
-.gjs-cv-canvas {
-  top: 0 !important;
-  left: 260px !important;
-  right: 260px !important;
-  width: calc(100% - 520px) !important;
-  height: 100% !important;
+  height: 100%;
+  width: 100%;
 }
 
 /* ============================================================================
-   Top Panels - Actions and Devices
+   Buttons & Panels - Modern Minimalist Style
    ============================================================================ */
 
-.panel__basic-actions {
-  position: absolute !important;
-  top: 16px !important;
-  right: 280px !important;
-  z-index: 50 !important;
-  display: flex !important;
-  gap: 8px !important;
-  background: white !important;
-  padding: 8px !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid #e2e8f0 !important;
-}
-
-.panel__devices {
-  position: absolute !important;
-  top: 16px !important;
-  left: 280px !important;
-  z-index: 50 !important;
-  display: flex !important;
-  gap: 8px !important;
-  background: white !important;
-  padding: 8px !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid #e2e8f0 !important;
-}
-
-/* Panel Buttons */
 .gjs-pn-btn {
-  min-width: 40px !important;
-  min-height: 40px !important;
-  border-radius: 8px !important;
-  transition: all 0.2s ease !important;
-  color: #4a5568 !important;
-  background: transparent !important;
-  border: none !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  border-radius: 10px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  color: #64748b !important;
+  background: white !important;
+  border: 1.5px solid #e5e7eb !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
   position: relative !important;
+  padding: 0 !important;
 }
 
 .gjs-pn-btn:hover {
-  background: #f0f4f8 !important;
-  color: #2d3748 !important;
+  background: #f8fafc !important;
+  border-color: #667eea !important;
+  color: #667eea !important;
   transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15) !important;
 }
 
-.gjs-pn-btn.gjs-pn-active {
-  background: #667eea !important;
+.gjs-pn-btn.gjs-pn-active,
+.gjs-pn-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-color: #667eea !important;
   color: white !important;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25) !important;
 }
 
 .gjs-pn-btn svg {
-  fill: currentColor !important;
+  width: 20px !important;
+  height: 20px !important;
+  stroke: currentColor !important;
+  fill: none !important;
+}
+
+/* Tab Buttons */
+.tab-btn {
+  min-width: auto !important;
+  padding: 10px 14px !important;
+  gap: 8px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  flex-direction: row !important;
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.tab-btn span {
+  color: inherit !important;
+  font-size: 13px !important;
+}
+
+.tab-btn svg {
   width: 18px !important;
   height: 18px !important;
 }
 
 /* ============================================================================
-   Left Sidebar - Blocks
+   Blocks Panel - Professional Grid
    ============================================================================ */
 
-.blocks-container {
-  position: absolute !important;
-  left: 0 !important;
-  top: 0 !important;
-  width: 260px !important;
-  height: 100% !important;
-  background: white !important;
-  border-right: 2px solid #e2e8f0 !important;
-  overflow-y: auto !important;
-  z-index: 40 !important;
-  padding: 20px 16px !important;
+.blocks-container,
+.layers-container,
+.styles-container,
+.traits-container,
+.selectors-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  display: none;
 }
 
+.blocks-container.active,
+.layers-container.active,
+.styles-container.active,
+.traits-container.active,
+.selectors-container.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Block Categories */
 .gjs-block-category {
-  margin-bottom: 24px !important;
+  margin-bottom: 28px !important;
 }
 
 .gjs-block-category .gjs-title {
-  background: #f8fafc !important;
-  color: #2d3748 !important;
-  padding: 10px 14px !important;
-  border-radius: 8px !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  padding: 12px 16px !important;
+  border-radius: 10px !important;
   font-size: 12px !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
-  margin-bottom: 12px !important;
-  border: 1px solid #e2e8f0 !important;
+  letter-spacing: 0.8px !important;
+  margin-bottom: 16px !important;
+  border: none !important;
   cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
+  transition: all 0.3s ease !important;
+  font-family: 'Cairo', sans-serif !important;
 }
 
+.gjs-block-category .gjs-title:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Blocks Grid */
 .gjs-blocks-cs {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  gap: 10px !important;
+  gap: 12px !important;
 }
 
 .gjs-block {
   width: 100% !important;
-  min-height: 90px !important;
+  min-height: 100px !important;
   background: white !important;
-  border: 2px solid #e2e8f0 !important;
-  border-radius: 10px !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 12px !important;
   margin: 0 !important;
-  padding: 12px !important;
-  transition: all 0.2s ease !important;
+  padding: 16px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   cursor: grab !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
+  text-align: center !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.gjs-block::before {
+  content: '';
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
+  transform: scaleX(0) !important;
+  transition: transform 0.3s ease !important;
+}
+
+.gjs-block:hover::before {
+  transform: scaleX(1) !important;
 }
 
 .gjs-block:hover {
   border-color: #667eea !important;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
-  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2) !important;
+  transform: translateY(-4px) scale(1.02) !important;
+  background: #fafbff !important;
 }
 
 .gjs-block:active {
@@ -161,363 +276,224 @@
 }
 
 .gjs-block__media {
-  margin-bottom: 8px !important;
-  font-size: 24px !important;
-  color: #667eea !important;
+  margin-bottom: 12px !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.gjs-block__media svg {
+  width: 100% !important;
+  height: 100% !important;
+  stroke: #667eea !important;
+  transition: all 0.3s ease !important;
+}
+
+.gjs-block:hover .gjs-block__media svg {
+  stroke: #764ba2 !important;
+  transform: scale(1.1) !important;
 }
 
 .gjs-block-label {
-  font-size: 11px !important;
-  color: #4a5568 !important;
+  font-size: 12px !important;
+  color: #475569 !important;
   font-weight: 600 !important;
   text-align: center !important;
   line-height: 1.4 !important;
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.gjs-block:hover .gjs-block-label {
+  color: #667eea !important;
 }
 
 /* ============================================================================
-   Right Sidebar - Style Manager & Layers
+   Style Manager - Professional Form Controls
    ============================================================================ */
 
-.styles-container,
-.layers-container,
-.traits-container,
-.selectors-container {
-  position: absolute !important;
-  right: 0 !important;
-  top: 0 !important;
-  width: 260px !important;
-  height: 100% !important;
-  background: white !important;
-  border-left: 2px solid #e2e8f0 !important;
-  overflow-y: auto !important;
-  z-index: 40 !important;
-  padding: 16px !important;
-}
-
-/* Panel Views Container */
-.gjs-pn-views-container {
-  background: white !important;
-  border: none !important;
-}
-
-.gjs-pn-views {
-  display: flex !important;
-  gap: 4px !important;
-  padding: 8px !important;
-  background: #f8fafc !important;
-  border-bottom: 2px solid #e2e8f0 !important;
-  margin-bottom: 12px !important;
-  border-radius: 8px 8px 0 0 !important;
-}
-
-.gjs-pn-btn.gjs-pn-active {
-  background: #667eea !important;
-  color: white !important;
-}
-
-/* Style Manager Sectors */
 .gjs-sm-sector {
   background: white !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 8px !important;
-  margin-bottom: 12px !important;
+  border: 1.5px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  margin-bottom: 16px !important;
   overflow: hidden !important;
+  transition: all 0.3s ease !important;
+}
+
+.gjs-sm-sector:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
 }
 
 .gjs-sm-sector .gjs-sm-title {
-  background: #f8fafc !important;
-  color: #2d3748 !important;
-  padding: 10px 12px !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
+  background: #f9fafb !important;
+  color: #1e293b !important;
+  padding: 14px 16px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
   cursor: pointer !important;
-  transition: background 0.2s ease !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+  transition: all 0.2s ease !important;
+  border-bottom: 1.5px solid #e5e7eb !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-family: 'Cairo', sans-serif !important;
 }
 
 .gjs-sm-sector .gjs-sm-title:hover {
-  background: #edf2f7 !important;
+  background: #f1f5f9 !important;
+  color: #667eea !important;
+}
+
+.gjs-sm-sector.gjs-sm-open .gjs-sm-title {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
 }
 
 .gjs-sm-properties {
-  padding: 12px !important;
+  padding: 16px !important;
   background: white !important;
 }
 
 .gjs-sm-property {
-  margin-bottom: 12px !important;
+  margin-bottom: 16px !important;
 }
 
 .gjs-sm-label {
-  font-size: 11px !important;
-  color: #718096 !important;
+  font-size: 12px !important;
+  color: #64748b !important;
   font-weight: 600 !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 8px !important;
   display: block !important;
   text-transform: capitalize !important;
+  font-family: 'Cairo', sans-serif !important;
 }
 
 /* Form Fields */
 .gjs-field input,
 .gjs-field select,
 .gjs-field-integer input,
-.gjs-field-color input {
+.gjs-field-color input,
+.gjs-field textarea {
   width: 100% !important;
-  padding: 8px 10px !important;
+  padding: 10px 12px !important;
   background: white !important;
-  border: 1px solid #cbd5e0 !important;
-  border-radius: 6px !important;
-  font-size: 12px !important;
-  color: #2d3748 !important;
+  border: 1.5px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  color: #1e293b !important;
   transition: all 0.2s ease !important;
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.gjs-field input:hover,
+.gjs-field select:hover,
+.gjs-field textarea:hover {
+  border-color: #cbd5e1 !important;
 }
 
 .gjs-field input:focus,
-.gjs-field select:focus {
+.gjs-field select:focus,
+.gjs-field textarea:focus {
   outline: none !important;
   border-color: #667eea !important;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+  background: #fafbff !important;
 }
 
 /* Color Picker */
 .gjs-field-color {
   display: flex !important;
-  gap: 8px !important;
+  gap: 10px !important;
   align-items: center !important;
 }
 
 .gjs-field-color-picker {
-  width: 36px !important;
-  height: 36px !important;
-  border-radius: 6px !important;
-  border: 2px solid #cbd5e0 !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  border: 2px solid #e5e7eb !important;
   cursor: pointer !important;
-  transition: border-color 0.2s ease !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
 }
 
 .gjs-field-color-picker:hover {
   border-color: #667eea !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
+}
+
+/* Radio & Checkboxes */
+.gjs-field-radio,
+.gjs-field-checkbox {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+.gjs-field-radio input,
+.gjs-field-checkbox input {
+  width: auto !important;
+  accent-color: #667eea !important;
 }
 
 /* ============================================================================
-   Layer Manager
+   Layer Manager - Tree Structure
    ============================================================================ */
 
 .gjs-layer {
   background: white !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 6px !important;
-  margin-bottom: 4px !important;
-  padding: 8px 10px !important;
-  font-size: 12px !important;
+  border: 1.5px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  margin-bottom: 6px !important;
+  padding: 10px 12px !important;
+  font-size: 13px !important;
   transition: all 0.2s ease !important;
-  color: #2d3748 !important;
+  color: #1e293b !important;
+  cursor: pointer !important;
+  font-family: 'Cairo', sans-serif !important;
 }
 
 .gjs-layer:hover {
-  background: #f7fafc !important;
+  background: #f9fafb !important;
   border-color: #667eea !important;
+  transform: translateX(-2px) !important;
 }
 
 .gjs-layer.gjs-selected {
-  background: #eef2ff !important;
+  background: linear-gradient(135deg, #eef2ff 0%, #faf5ff 100%) !important;
   border-color: #667eea !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15) !important;
 }
 
 .gjs-layer__icon {
-  color: #718096 !important;
-  margin-right: 6px !important;
+  color: #94a3b8 !important;
+  margin-left: 8px !important;
 }
 
 .gjs-layer__name {
-  color: #2d3748 !important;
+  color: #1e293b !important;
+}
+
+.gjs-layer.gjs-selected .gjs-layer__name {
+  color: #667eea !important;
 }
 
 /* ============================================================================
-   Canvas - Main Editing Area
+   Canvas & Frame - Main Design Area
    ============================================================================ */
 
 .gjs-cv-canvas {
   background: #f0f4f8 !important;
-  background-image:
-    linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
-    linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
-    linear-gradient(-45deg, transparent 75%, #e2e8f0 75%) !important;
+  background-image: radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 0) !important;
   background-size: 20px 20px !important;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
   padding: 40px !important;
+  position: relative !important;
 }
-
-.gjs-frame {
-  border: none !important;
-  border-radius: 8px !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
-  background: white !important;
-  margin: 0 auto !important;
-}
-
-/* Selected Element Highlight */
-.gjs-selected {
-  outline: 3px solid #667eea !important;
-  outline-offset: -3px !important;
-}
-
-/* Hover Element Highlight */
-.gjs-hovered {
-  outline: 2px dashed #a0aec0 !important;
-  outline-offset: -2px !important;
-}
-
-/* ============================================================================
-   Toolbar - Element Actions
-   ============================================================================ */
-
-.gjs-toolbar {
-  background: white !important;
-  border: 1px solid #cbd5e0 !important;
-  border-radius: 8px !important;
-  padding: 6px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
-
-.gjs-toolbar-item {
-  min-width: 32px !important;
-  min-height: 32px !important;
-  border-radius: 6px !important;
-  transition: all 0.2s ease !important;
-  background: transparent !important;
-  color: #4a5568 !important;
-  border: none !important;
-  margin: 0 2px !important;
-}
-
-.gjs-toolbar-item:hover {
-  background: #667eea !important;
-  color: white !important;
-}
-
-/* ============================================================================
-   Modals
-   ============================================================================ */
-
-.gjs-mdl-container {
-  background: rgba(0, 0, 0, 0.5) !important;
-}
-
-.gjs-mdl-dialog {
-  background: white !important;
-  border-radius: 12px !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2) !important;
-  border: 1px solid #e2e8f0 !important;
-}
-
-.gjs-mdl-header {
-  background: #f8fafc !important;
-  padding: 16px 20px !important;
-  border-bottom: 1px solid #e2e8f0 !important;
-  border-radius: 12px 12px 0 0 !important;
-}
-
-.gjs-mdl-title {
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  color: #2d3748 !important;
-}
-
-.gjs-mdl-content {
-  padding: 20px !important;
-  color: #2d3748 !important;
-}
-
-.gjs-btn-prim {
-  background: #667eea !important;
-  color: white !important;
-  border: none !important;
-  padding: 10px 20px !important;
-  border-radius: 8px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-
-.gjs-btn-prim:hover {
-  background: #5568d3 !important;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
-}
-
-/* ============================================================================
-   Traits Panel
-   ============================================================================ */
-
-.gjs-trt-trait {
-  margin-bottom: 14px !important;
-}
-
-.gjs-trt-trait__label {
-  font-size: 11px !important;
-  color: #718096 !important;
-  font-weight: 600 !important;
-  margin-bottom: 6px !important;
-  display: block !important;
-}
-
-.gjs-trt-trait__field input,
-.gjs-trt-trait__field select {
-  width: 100% !important;
-  padding: 8px 10px !important;
-  background: white !important;
-  border: 1px solid #cbd5e0 !important;
-  border-radius: 6px !important;
-  font-size: 12px !important;
-  color: #2d3748 !important;
-}
-
-.gjs-trt-trait__field input:focus,
-.gjs-trt-trait__field select:focus {
-  outline: none !important;
-  border-color: #667eea !important;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
-}
-
-/* ============================================================================
-   Scrollbar Styling
-   ============================================================================ */
-
-.blocks-container::-webkit-scrollbar,
-.styles-container::-webkit-scrollbar,
-.layers-container::-webkit-scrollbar,
-.traits-container::-webkit-scrollbar {
-  width: 8px !important;
-  height: 8px !important;
-}
-
-.blocks-container::-webkit-scrollbar-track,
-.styles-container::-webkit-scrollbar-track,
-.layers-container::-webkit-scrollbar-track,
-.traits-container::-webkit-scrollbar-track {
-  background: #f7fafc !important;
-}
-
-.blocks-container::-webkit-scrollbar-thumb,
-.styles-container::-webkit-scrollbar-thumb,
-.layers-container::-webkit-scrollbar-thumb,
-.traits-container::-webkit-scrollbar-thumb {
-  background: #cbd5e0 !important;
-  border-radius: 4px !important;
-}
-
-.blocks-container::-webkit-scrollbar-thumb:hover,
-.styles-container::-webkit-scrollbar-thumb:hover,
-.layers-container::-webkit-scrollbar-thumb:hover,
-.traits-container::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0 !important;
-}
-
-/* ============================================================================
-   Responsive View
-   ============================================================================ */
 
 .gjs-cv-canvas__frames {
   margin: 0 auto !important;
@@ -527,47 +503,284 @@
   min-height: 100% !important;
 }
 
+.gjs-frame-wrapper {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: white !important;
+  transition: all 0.3s ease !important;
+}
+
+.gjs-frame {
+  border: none !important;
+  background: white !important;
+}
+
+/* Element Selection */
+.gjs-selected {
+  outline: 3px solid #667eea !important;
+  outline-offset: -3px !important;
+  position: relative !important;
+}
+
+.gjs-selected::after {
+  content: attr(data-gjs-type) !important;
+  position: absolute !important;
+  top: -28px !important;
+  right: -3px !important;
+  background: #667eea !important;
+  color: white !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border-radius: 6px 6px 0 0 !important;
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.gjs-hovered {
+  outline: 2px dashed #94a3b8 !important;
+  outline-offset: -2px !important;
+}
+
 /* ============================================================================
-   Additional Fixes
+   Toolbar - Component Actions
    ============================================================================ */
 
-/* Fix GrapesJS default white-on-white issues */
-.gjs-one-bg,
-.gjs-two-color,
-.gjs-three-bg {
+.gjs-toolbar {
   background: white !important;
-  color: #2d3748 !important;
+  border: 1.5px solid #e5e7eb !important;
+  border-radius: 10px !important;
+  padding: 6px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(12px) !important;
 }
 
-.gjs-four-color,
-.gjs-four-color-h:hover {
-  color: #667eea !important;
+.gjs-toolbar-item {
+  min-width: 36px !important;
+  min-height: 36px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  background: transparent !important;
+  color: #64748b !important;
+  border: none !important;
+  margin: 0 2px !important;
+  cursor: pointer !important;
 }
 
-/* Fix input visibility */
-input[type="text"],
-input[type="number"],
-select {
-  color: #2d3748 !important;
+.gjs-toolbar-item:hover {
+  background: #667eea !important;
+  color: white !important;
+  transform: scale(1.1) !important;
+}
+
+/* ============================================================================
+   Modals - Dialogs & Popups
+   ============================================================================ */
+
+.gjs-mdl-container {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.gjs-mdl-dialog {
   background: white !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+  border: 1.5px solid #e5e7eb !important;
+  overflow: hidden !important;
+  animation: modalSlideIn 0.3s ease !important;
 }
 
-/* Fix button text */
-button {
-  color: #2d3748 !important;
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
-button:hover {
-  color: #667eea !important;
+.gjs-mdl-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  padding: 20px 24px !important;
+  border-bottom: none !important;
 }
 
-/* Ensure all text is visible */
+.gjs-mdl-title {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: white !important;
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.gjs-mdl-content {
+  padding: 24px !important;
+  color: #1e293b !important;
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.gjs-btn-prim {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 12px 24px !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  font-family: 'Cairo', sans-serif !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+}
+
+.gjs-btn-prim:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+}
+
+/* ============================================================================
+   Traits Panel
+   ============================================================================ */
+
+.gjs-trt-trait {
+  margin-bottom: 18px !important;
+}
+
+.gjs-trt-trait__label {
+  font-size: 12px !important;
+  color: #64748b !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.gjs-trt-trait__field input,
+.gjs-trt-trait__field select,
+.gjs-trt-trait__field textarea {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  background: white !important;
+  border: 1.5px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  color: #1e293b !important;
+  transition: all 0.2s ease !important;
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.gjs-trt-trait__field input:focus,
+.gjs-trt-trait__field select:focus,
+.gjs-trt-trait__field textarea:focus {
+  outline: none !important;
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* ============================================================================
+   Scrollbar - Custom Styling
+   ============================================================================ */
+
+.blocks-container::-webkit-scrollbar,
+.styles-container::-webkit-scrollbar,
+.layers-container::-webkit-scrollbar,
+.traits-container::-webkit-scrollbar,
+.editor-canvas::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.blocks-container::-webkit-scrollbar-track,
+.styles-container::-webkit-scrollbar-track,
+.layers-container::-webkit-scrollbar-track,
+.traits-container::-webkit-scrollbar-track,
+.editor-canvas::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 10px !important;
+}
+
+.blocks-container::-webkit-scrollbar-thumb,
+.styles-container::-webkit-scrollbar-thumb,
+.layers-container::-webkit-scrollbar-thumb,
+.traits-container::-webkit-scrollbar-thumb,
+.editor-canvas::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%) !important;
+  border-radius: 10px !important;
+  transition: background 0.3s ease !important;
+}
+
+.blocks-container::-webkit-scrollbar-thumb:hover,
+.styles-container::-webkit-scrollbar-thumb:hover,
+.layers-container::-webkit-scrollbar-thumb:hover,
+.traits-container::-webkit-scrollbar-thumb:hover,
+.editor-canvas::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #764ba2 0%, #667eea 100%) !important;
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .editor-sidebar-left,
+  .editor-sidebar-right {
+    width: 240px;
+  }
+
+  .gjs-blocks-cs {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .editor-topbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 10px;
+  }
+
+  .panel__top-center {
+    position: static;
+    transform: none;
+    margin-top: 8px;
+  }
+}
+
+/* ============================================================================
+   Additional Visual Enhancements
+   ============================================================================ */
+
+/* Loading State */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.gjs-block.loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Focus Ring */
+*:focus-visible {
+  outline: 2px solid #667eea !important;
+  outline-offset: 2px !important;
+}
+
+/* Transitions */
 * {
-  color: inherit;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.gjs-field,
-.gjs-sm-property,
-.gjs-layer {
-  color: #2d3748 !important;
+/* Accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
