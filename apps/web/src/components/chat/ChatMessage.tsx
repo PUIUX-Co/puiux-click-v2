@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { User } from 'lucide-react';
 import type { ChatMessage as ChatMessageType } from '@/types/chat';
@@ -10,7 +11,7 @@ interface ChatMessageProps {
   isLatest?: boolean;
 }
 
-export default function ChatMessage({ message, isLatest }: ChatMessageProps) {
+const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(function ChatMessage({ message, isLatest }, ref) {
   const isUser = message.role === 'user';
   const isSystem = message.role === 'system';
 
@@ -33,6 +34,7 @@ export default function ChatMessage({ message, isLatest }: ChatMessageProps) {
   // User & AI messages
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, x: isUser ? 20 : -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{
@@ -109,4 +111,8 @@ export default function ChatMessage({ message, isLatest }: ChatMessageProps) {
       </div>
     </motion.div>
   );
-}
+});
+
+ChatMessage.displayName = 'ChatMessage';
+
+export default ChatMessage;
