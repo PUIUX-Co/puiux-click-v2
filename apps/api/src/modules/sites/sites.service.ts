@@ -118,6 +118,7 @@ export class SitesService {
             email: createSiteDto.email,
             address: createSiteDto.address,
           },
+          selectedSections: createSiteDto.selectedSections, // User-selected sections
           language: 'ar', // Default to Arabic
         });
 

@@ -59,6 +59,7 @@ export interface CreateSiteDto {
   phone?: string;
   address?: string;
   colorPalette: ColorPalette;
+  selectedSections?: string[];
   templateId?: string;
 }
 

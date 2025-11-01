@@ -18,12 +18,15 @@ export interface WizardData {
     accent: string;
   };
 
+  // Step 3.5: Selected Sections (NEW)
+  selectedSections: string[];
+
   // Step 4: Template
   templateId: string;
 }
 
 export interface WizardContextType {
-  // Current step (0-3)
+  // Current step (0-4)
   currentStep: number;
 
   // Wizard data
@@ -33,6 +36,7 @@ export interface WizardContextType {
   setIndustry: (industry: IndustryType) => void;
   setBusinessInfo: (info: Partial<WizardData>) => void;
   setColorPalette: (colors: WizardData['colorPalette']) => void;
+  setSelectedSections: (sections: string[]) => void;
   setTemplate: (templateId: string) => void;
 
   // Navigation
@@ -100,6 +104,50 @@ export const industries = [
     color: 'from-yellow-500 to-orange-500',
   },
 ] as const;
+
+// Available sections for each industry
+export const availableSections: Record<IndustryType, Array<{ id: string; title: string; description: string; required: boolean }>> = {
+  RESTAURANT: [
+    { id: 'hero', title: 'القسم الرئيسي', description: 'صورة رئيسية وعنوان جذاب', required: true },
+    { id: 'about', title: 'من نحن', description: 'نبذة عن المطعم', required: true },
+    { id: 'menu', title: 'قائمة الطعام', description: 'أصناف الطعام والمشروبات', required: false },
+    { id: 'gallery', title: 'معرض الصور', description: 'صور من المطعم والأطباق', required: false },
+    { id: 'testimonials', title: 'آراء العملاء', description: 'تقييمات ومراجعات الزوار', required: false },
+    { id: 'contact', title: 'تواصل معنا', description: 'معلومات الاتصال والموقع', required: true },
+  ],
+  DENTAL: [
+    { id: 'hero', title: 'القسم الرئيسي', description: 'صورة رئيسية ومعلومات العيادة', required: true },
+    { id: 'about', title: 'من نحن', description: 'نبذة عن العيادة', required: true },
+    { id: 'services', title: 'الخدمات', description: 'خدمات الأسنان المتوفرة', required: false },
+    { id: 'team', title: 'فريق العمل', description: 'الأطباء والممرضين', required: false },
+    { id: 'testimonials', title: 'آراء المرضى', description: 'تقييمات المرضى', required: false },
+    { id: 'contact', title: 'احجز موعد', description: 'نموذج حجز ومعلومات التواصل', required: true },
+  ],
+  PORTFOLIO: [
+    { id: 'hero', title: 'القسم الرئيسي', description: 'عنوان ترحيبي', required: true },
+    { id: 'about', title: 'من أنا', description: 'نبذة تعريفية', required: true },
+    { id: 'portfolio', title: 'أعمالي', description: 'معرض الأعمال والمشاريع', required: false },
+    { id: 'services', title: 'الخدمات', description: 'الخدمات التي تقدمها', required: false },
+    { id: 'testimonials', title: 'آراء العملاء', description: 'تقييمات العملاء', required: false },
+    { id: 'contact', title: 'تواصل معي', description: 'نموذج تواصل ومعلومات', required: true },
+  ],
+  BUSINESS: [
+    { id: 'hero', title: 'القسم الرئيسي', description: 'عنوان الشركة الرئيسي', required: true },
+    { id: 'about', title: 'من نحن', description: 'نبذة عن الشركة', required: true },
+    { id: 'services', title: 'خدماتنا', description: 'الخدمات التي نقدمها', required: false },
+    { id: 'features', title: 'مميزاتنا', description: 'ما يميزنا عن المنافسين', required: false },
+    { id: 'team', title: 'فريق العمل', description: 'أعضاء الفريق', required: false },
+    { id: 'contact', title: 'تواصل معنا', description: 'نموذج تواصل ومعلومات', required: true },
+  ],
+  STORE: [
+    { id: 'hero', title: 'القسم الرئيسي', description: 'عنوان المتجر الرئيسي', required: true },
+    { id: 'about', title: 'من نحن', description: 'نبذة عن المتجر', required: true },
+    { id: 'products', title: 'المنتجات', description: 'عرض المنتجات', required: false },
+    { id: 'categories', title: 'التصنيفات', description: 'تصنيفات المنتجات', required: false },
+    { id: 'testimonials', title: 'آراء العملاء', description: 'تقييمات المشترين', required: false },
+    { id: 'contact', title: 'تواصل معنا', description: 'معلومات التواصل', required: true },
+  ],
+};
 
 export const defaultColorPalettes = [
   {

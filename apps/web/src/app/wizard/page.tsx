@@ -11,13 +11,15 @@ import { Check, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
 import IndustryStep from '@/components/wizard/IndustryStep';
 import BusinessInfoStep from '@/components/wizard/BusinessInfoStep';
 import ColorPaletteStep from '@/components/wizard/ColorPaletteStep';
+import SectionsStep from '@/components/wizard/SectionsStep';
 import TemplatePreviewStep from '@/components/wizard/TemplatePreviewStep';
 
 const steps = [
   { id: 0, title: 'اختر نوع النشاط', component: IndustryStep },
   { id: 1, title: 'معلومات النشاط', component: BusinessInfoStep },
   { id: 2, title: 'الألوان', component: ColorPaletteStep },
-  { id: 3, title: 'المعاينة', component: TemplatePreviewStep },
+  { id: 3, title: 'اختر الأقسام', component: SectionsStep },
+  { id: 4, title: 'المعاينة', component: TemplatePreviewStep },
 ];
 
 function WizardContent() {

@@ -212,8 +212,10 @@ export class AiService {
       const language = dto.language || 'ar';
       const isRTL = language === 'ar';
 
-      // Get sections structure based on industry
-      const sections = this.getSectionsForIndustry(dto.industry, dto.businessName);
+      // Get sections structure based on user selection or industry defaults
+      const sections = dto.selectedSections && dto.selectedSections.length > 0
+        ? this.getSelectedSections(dto.selectedSections, dto.industry, dto.businessName)
+        : this.getSectionsForIndustry(dto.industry, dto.businessName);
 
       // 1. Fetch images from Unsplash for each section BEFORE generating with AI
       this.logger.log('Fetching images from Unsplash for sections...');
@@ -895,6 +897,59 @@ ${sectionsList}
 
     const sections = industrySections[industry] || industrySections.BUSINESS;
     return [...baseSections, ...sections];
+  }
+
+  /**
+   * Get sections based on user selection
+   * Maps section IDs to their full structure
+   */
+  private getSelectedSections(
+    selectedSectionIds: string[],
+    _industry: string,
+    _businessName: string,
+  ): Array<{
+    id: string;
+    type: string;
+    title: string;
+    order: number;
+  }> {
+    // Define all available sections with their metadata
+    const allSections: Record<string, { type: string; title: string }> = {
+      hero: { type: 'hero', title: 'القسم الرئيسي' },
+      about: { type: 'about', title: 'من نحن' },
+      menu: { type: 'products', title: 'قائمة الطعام' },
+      services: { type: 'services', title: 'الخدمات' },
+      products: { type: 'products', title: 'المنتجات' },
+      portfolio: { type: 'gallery', title: 'أعمالنا' },
+      gallery: { type: 'gallery', title: 'معرض الصور' },
+      team: { type: 'team', title: 'فريق العمل' },
+      testimonials: { type: 'testimonials', title: 'آراء العملاء' },
+      features: { type: 'features', title: 'مميزاتنا' },
+      categories: { type: 'categories', title: 'التصنيفات' },
+      contact: { type: 'contact', title: 'تواصل معنا' },
+    };
+
+    // Map selected IDs to full section structures
+    return selectedSectionIds
+      .map((id, index) => {
+        const section = allSections[id];
+        if (!section) {
+          this.logger.warn(`Unknown section ID: ${id}`);
+          return null;
+        }
+        return {
+          id,
+          type: section.type,
+          title: section.title,
+          order: index + 1,
+        };
+      })
+      .filter((s) => s !== null) as Array<{
+      id: string;
+      type: string;
+      title: string;
+      order: number;
+    }>;
   }
 
   /**

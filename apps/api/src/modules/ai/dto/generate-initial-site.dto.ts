@@ -5,6 +5,9 @@ import {
   IsObject,
   ValidateNested,
   IsOptional,
+  IsArray,
+  ArrayMinSize,
+  ArrayMaxSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Industry } from '@prisma/client';
@@ -81,6 +84,13 @@ export class GenerateInitialSiteDto {
   @Type(() => ContactInfoDto)
   @IsOptional()
   contactInfo?: ContactInfoDto;
+
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMinSize(3, { message: 'يجب اختيار 3 أقسام على الأقل' })
+  @ArrayMaxSize(5, { message: 'يمكنك اختيار 5 أقسام كحد أقصى' })
+  @IsOptional()
+  selectedSections?: string[]; // e.g. ['hero', 'about', 'menu', 'contact']
 
   @IsString()
   @IsOptional()

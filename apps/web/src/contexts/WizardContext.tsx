@@ -20,6 +20,7 @@ const initialData: WizardData = {
     secondary: '#0284c7',
     accent: '#06b6d4',
   },
+  selectedSections: [],
   templateId: '',
 };
 
@@ -44,6 +45,11 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     setData((prev) => ({ ...prev, colorPalette: colors }));
   }, []);
 
+  // Set selected sections
+  const setSelectedSections = useCallback((sections: string[]) => {
+    setData((prev) => ({ ...prev, selectedSections: sections }));
+  }, []);
+
   // Set template
   const setTemplate = useCallback((templateId: string) => {
     setData((prev) => ({ ...prev, templateId }));
@@ -51,7 +57,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
 
   // Navigation
   const nextStep = useCallback(() => {
-    setCurrentStep((prev) => Math.min(prev + 1, 3));
+    setCurrentStep((prev) => Math.min(prev + 1, 4));
   }, []);
 
   const prevStep = useCallback(() => {
@@ -59,7 +65,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const goToStep = useCallback((step: number) => {
-    setCurrentStep(Math.max(0, Math.min(step, 3)));
+    setCurrentStep(Math.max(0, Math.min(step, 4)));
   }, []);
 
   // Validation
@@ -71,7 +77,9 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
         return !!(data.businessName && data.email);
       case 2: // Color palette
         return !!(data.colorPalette.primary && data.colorPalette.secondary);
-      case 3: // Template (always can proceed for now)
+      case 3: // Sections selection
+        return data.selectedSections.length >= 3 && data.selectedSections.length <= 5;
+      case 4: // Template (always can proceed for now)
         return true;
       default:
         return false;
@@ -102,6 +110,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
         phone: data.phone,
         address: data.address,
         colorPalette: data.colorPalette,
+        selectedSections: data.selectedSections,
         templateId: data.templateId,
       });
 
@@ -135,6 +144,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     setIndustry,
     setBusinessInfo,
     setColorPalette,
+    setSelectedSections,
     setTemplate,
     nextStep,
     prevStep,
