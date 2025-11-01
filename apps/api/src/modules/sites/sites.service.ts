@@ -412,73 +412,100 @@ export class SitesService {
 
   /**
    * Generate initial pages structure based on industry
+   * Returns GrapesJS-compatible format
    */
   private generateInitialPages(industry: Industry, dto: CreateSiteDto): any {
-    const commonPages = {
-      home: {
-        title: 'الرئيسية',
-        sections: [
-          {
-            type: 'hero',
-            title: dto.businessName,
-            subtitle: dto.description || '',
-            cta: { text: 'اتصل بنا', link: '#contact' },
-          },
-        ],
-      },
-      contact: {
-        title: 'اتصل بنا',
-        sections: [
-          {
-            type: 'contact-form',
-            phone: dto.phone,
-            email: dto.email,
-            address: dto.address,
-          },
-        ],
-      },
-    };
+    const { primary, secondary, accent } = dto.colorPalette as any;
 
-    // Industry-specific pages
-    const industryPages: Record<Industry, any> = {
-      RESTAURANT: {
-        ...commonPages,
-        menu: {
-          title: 'قائمة الطعام',
-          sections: [{ type: 'menu-grid', items: [] }],
-        },
-      },
-      DENTAL: {
-        ...commonPages,
-        services: {
-          title: 'خدماتنا',
-          sections: [{ type: 'services-grid', items: [] }],
-        },
-      },
-      PORTFOLIO: {
-        ...commonPages,
-        projects: {
-          title: 'أعمالي',
-          sections: [{ type: 'portfolio-grid', items: [] }],
-        },
-      },
-      BUSINESS: {
-        ...commonPages,
-        about: {
-          title: 'من نحن',
-          sections: [{ type: 'about-section' }],
-        },
-      },
-      STORE: {
-        ...commonPages,
-        products: {
-          title: 'المنتجات',
-          sections: [{ type: 'products-grid', items: [] }],
-        },
-      },
-    };
+    // Create a professional landing page with GrapesJS format
+    const defaultHTML = `
+      <section class="hero-section" style="min-height: 100vh; background: linear-gradient(135deg, ${primary} 0%, ${secondary} 100%); display: flex; align-items: center; justify-content: center; padding: 2rem; text-align: center; color: white;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto;">
+          <h1 style="font-size: 3.5rem; font-weight: bold; margin-bottom: 1.5rem; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${dto.businessName}</h1>
+          <p style="font-size: 1.5rem; margin-bottom: 2rem; opacity: 0.95;">${dto.description || 'موقعك الاحترافي جاهز الآن!'}</p>
+          <a href="#contact" style="display: inline-block; background: white; color: ${primary}; padding: 1rem 2.5rem; border-radius: 50px; font-weight: bold; font-size: 1.1rem; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;">تواصل معنا الآن</a>
+        </div>
+      </section>
 
-    return industryPages[industry] || commonPages;
+      <section class="features-section" style="padding: 5rem 2rem; background: #f8f9fa;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; text-align: center;">
+          <h2 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 3rem; color: ${primary};">لماذا نحن؟</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+            <div class="feature-card" style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+              <div style="width: 60px; height: 60px; background: ${primary}; border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem;">✨</div>
+              <h3 style="font-size: 1.3rem; font-weight: bold; margin-bottom: 0.5rem; color: #333;">جودة عالية</h3>
+              <p style="color: #666;">نقدم أفضل الخدمات بجودة استثنائية</p>
+            </div>
+            <div class="feature-card" style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+              <div style="width: 60px; height: 60px; background: ${secondary}; border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem;">⚡</div>
+              <h3 style="font-size: 1.3rem; font-weight: bold; margin-bottom: 0.5rem; color: #333;">سرعة في التنفيذ</h3>
+              <p style="color: #666;">نلتزم بالمواعيد ونسلم في الوقت المحدد</p>
+            </div>
+            <div class="feature-card" style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+              <div style="width: 60px; height: 60px; background: ${accent}; border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem;">🎯</div>
+              <h3 style="font-size: 1.3rem; font-weight: bold; margin-bottom: 0.5rem; color: #333;">احترافية</h3>
+              <p style="color: #666;">فريق محترف وخبرة واسعة في المجال</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="contact-section" style="padding: 5rem 2rem; background: linear-gradient(135deg, ${secondary} 0%, ${primary} 100%); color: white;">
+        <div class="container" style="max-width: 800px; margin: 0 auto; text-align: center;">
+          <h2 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 2rem;">تواصل معنا</h2>
+          <p style="font-size: 1.2rem; margin-bottom: 3rem; opacity: 0.95;">نسعد بخدمتك! تواصل معنا الآن</p>
+          <div style="background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            ${dto.phone ? `<div style="margin-bottom: 1.5rem;"><span style="color: ${primary}; font-size: 1.5rem; margin-left: 0.5rem;">📱</span><a href="tel:${dto.phone}" style="color: #333; text-decoration: none; font-size: 1.2rem; font-weight: 500;">${dto.phone}</a></div>` : ''}
+            ${dto.email ? `<div style="margin-bottom: 1.5rem;"><span style="color: ${secondary}; font-size: 1.5rem; margin-left: 0.5rem;">📧</span><a href="mailto:${dto.email}" style="color: #333; text-decoration: none; font-size: 1.2rem; font-weight: 500;">${dto.email}</a></div>` : ''}
+            ${dto.address ? `<div><span style="color: ${accent}; font-size: 1.5rem; margin-left: 0.5rem;">📍</span><span style="color: #666; font-size: 1.1rem;">${dto.address}</span></div>` : ''}
+          </div>
+        </div>
+      </section>
+
+      <footer style="background: #1a1a1a; color: white; text-align: center; padding: 2rem;">
+        <p style="margin: 0; opacity: 0.8;">© ${new Date().getFullYear()} ${dto.businessName}. جميع الحقوق محفوظة.</p>
+        <p style="margin: 0.5rem 0 0; opacity: 0.6; font-size: 0.9rem;">تم الإنشاء بواسطة <a href="https://puiux.com" style="color: ${primary}; text-decoration: none;">PUIUX Click</a></p>
+      </footer>
+    `;
+
+    // Return GrapesJS-compatible structure
+    return {
+      assets: [],
+      styles: [],
+      pages: [
+        {
+          id: 'home',
+          name: 'الصفحة الرئيسية',
+          frames: [
+            {
+              component: {
+                type: 'wrapper',
+                stylable: ['background', 'background-color'],
+                components: [
+                  {
+                    tagName: 'div',
+                    type: 'default',
+                    components: defaultHTML,
+                  },
+                ],
+              },
+              head: {
+                type: 'head',
+                components: [
+                  {
+                    type: 'link',
+                    attributes: {
+                      rel: 'stylesheet',
+                      href: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    };
   }
 
   /**

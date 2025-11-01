@@ -350,19 +350,9 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
   };
 
   return (
-    <div className="h-full w-full">
+    <div className="grapesjs-editor-container h-full w-full relative">
       {/* GrapesJS Container */}
       <div ref={editorRef} id="gjs" className="h-full w-full" />
-
-      {/* Custom Panels - will be positioned absolutely */}
-      <div className="panel__basic-actions absolute right-4 top-4 z-50 flex gap-2 rounded-lg border border-border/50 bg-background/95 p-1 shadow-lg backdrop-blur-xl" />
-      <div className="panel__devices absolute left-4 top-4 z-50 flex gap-2 rounded-lg border border-border/50 bg-background/95 p-1 shadow-lg backdrop-blur-xl" />
-
-      {/* Side Panels */}
-      <div className="blocks-container absolute left-0 top-16 z-40 h-[calc(100%-4rem)] w-64 overflow-y-auto border-l border-border/50 bg-background/95 p-4 backdrop-blur-xl" />
-      <div className="styles-container absolute right-0 top-16 z-40 h-[calc(100%-4rem)] w-64 overflow-y-auto border-r border-border/50 bg-background/95 p-4 backdrop-blur-xl" />
-      <div className="layers-container absolute bottom-0 right-0 z-40 hidden h-48 w-64 border-r border-t border-border/50 bg-background/95 p-4 backdrop-blur-xl" />
-      <div className="traits-container absolute bottom-0 left-0 z-40 hidden h-48 w-64 border-l border-t border-border/50 bg-background/95 p-4 backdrop-blur-xl" />
     </div>
   );
 }
