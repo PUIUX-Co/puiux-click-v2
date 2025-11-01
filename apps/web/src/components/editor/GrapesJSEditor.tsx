@@ -3,9 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Site } from '@/lib/api/sites';
 import toast from 'react-hot-toast';
-
-import 'grapesjs/dist/css/grapes.min.css';
-import '@/styles/grapesjs-custom.css';
+import Script from 'next/script';
 
 interface GrapesJSEditorProps {
   site: Site;
@@ -15,6 +13,8 @@ interface GrapesJSEditorProps {
 export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [editor, setEditor] = useState<any>(null);
+  const [currentDevice, setCurrentDevice] = useState('desktop');
+  const [activeTab, setActiveTab] = useState('styles');
 
   useEffect(() => {
     if (!editorRef.current || editor) return;
@@ -22,37 +22,36 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
     import('grapesjs').then(({ default: grapesjs }) => {
       import('grapesjs-preset-webpage').then(({ default: gjsPresetWebpage }) => {
         const editorInstance = grapesjs.init({
-          container: '#gjs',
+          container: '#gjs-editor',
           height: '100%',
           width: 'auto',
           fromElement: false,
           storageManager: false,
 
-          // Canvas config
+          // إلغاء استيراد CSS الافتراضي
+          baseCss: '',
+
           canvas: {
             styles: [
               'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap',
             ],
           },
 
-          // Plugins
           plugins: [gjsPresetWebpage],
           pluginsOpts: {
             'gjs-preset-webpage': {
-              modalImportTitle: 'استيراد',
-              modalImportLabel: 'الصق الكود',
+              modalImportTitle: 'استيراد الكود',
+              modalImportLabel: 'الصق كود HTML/CSS',
               blocksBasicOpts: { flexGrid: true },
             },
           },
 
-          // Block Manager
           blockManager: {
-            appendTo: '#blocks',
+            appendTo: '#blocks-panel',
           },
 
-          // Style Manager
           styleManager: {
-            appendTo: '#styles',
+            appendTo: '#styles-panel',
             sectors: [
               {
                 name: 'الأبعاد',
@@ -60,29 +59,37 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
                 buildProps: ['width', 'height', 'padding', 'margin'],
               },
               {
-                name: 'النص',
+                name: 'النصوص',
                 open: false,
-                buildProps: ['font-family', 'font-size', 'color', 'text-align'],
+                buildProps: ['font-family', 'font-size', 'font-weight', 'color', 'text-align', 'line-height'],
               },
               {
-                name: 'التصميم',
+                name: 'الخلفية',
                 open: false,
-                buildProps: ['background', 'border', 'border-radius', 'box-shadow'],
+                buildProps: ['background-color', 'background', 'background-image'],
+              },
+              {
+                name: 'الحدود',
+                open: false,
+                buildProps: ['border', 'border-radius', 'box-shadow'],
+              },
+              {
+                name: 'العرض',
+                open: false,
+                buildProps: ['display', 'flex-direction', 'justify-content', 'align-items', 'gap'],
               },
             ],
           },
 
-          // Layer Manager
           layerManager: {
-            appendTo: '#layers',
+            appendTo: '#layers-panel',
           },
 
-          // Device Manager
           deviceManager: {
             devices: [
               { id: 'desktop', name: 'Desktop', width: '' },
-              { id: 'tablet', name: 'Tablet', width: '768px' },
-              { id: 'mobile', name: 'Mobile', width: '375px' },
+              { id: 'tablet', name: 'Tablet', width: '768px', widthMedia: '768px' },
+              { id: 'mobile', name: 'Mobile', width: '375px', widthMedia: '480px' },
             ],
           },
         });
@@ -95,28 +102,23 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
               editorInstance.loadProjectData(pagesData);
             }
           } catch (error) {
-            console.error('Failed to load:', error);
+            console.error('Failed to load site:', error);
           }
         }
 
-        // Auto-save
-        editorInstance.on('storage:store', () => {
+        // Auto-save on change
+        editorInstance.on('update', () => {
           const data = editorInstance.getProjectData();
           onSave(data);
         });
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-          if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            const data = editorInstance.getProjectData();
-            onSave(data);
-            toast.success('تم الحفظ!');
-          }
-        });
-
         setEditor(editorInstance);
-        toast.success('المحرر جاهز!');
+        toast.success('المحرر جاهز للعمل!', {
+          icon: '✨',
+          style: {
+            fontFamily: 'Cairo, sans-serif',
+          },
+        });
       });
     });
 
@@ -127,74 +129,137 @@ export default function GrapesJSEditor({ site, onSave }: GrapesJSEditorProps) {
     };
   }, []);
 
+  const handleUndo = () => {
+    editor?.runCommand('core:undo');
+  };
+
+  const handleRedo = () => {
+    editor?.runCommand('core:redo');
+  };
+
+  const handleDeviceChange = (device: string) => {
+    setCurrentDevice(device);
+    editor?.setDevice(device);
+  };
+
+  const handlePreview = () => {
+    editor?.runCommand('preview');
+  };
+
+  const handleSave = () => {
+    const data = editor?.getProjectData();
+    onSave(data);
+    toast.success('تم الحفظ بنجاح!', {
+      icon: '💾',
+      style: {
+        fontFamily: 'Cairo, sans-serif',
+      },
+    });
+  };
+
+  const handleClear = () => {
+    if (confirm('هل أنت متأكد من حذف كل المحتوى؟')) {
+      editor?.runCommand('core:canvas-clear');
+    }
+  };
+
   return (
-    <div className="editor-container">
-      {/* Top Toolbar */}
-      <div className="editor-toolbar">
-        <div className="toolbar-section">
-          <button className="toolbar-btn" onClick={() => editor?.runCommand('core:undo')} title="تراجع">
-            ↶
-          </button>
-          <button className="toolbar-btn" onClick={() => editor?.runCommand('core:redo')} title="إعادة">
-            ↷
-          </button>
-        </div>
+    <>
+      <Script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" />
 
-        <div className="toolbar-section">
-          <button className="toolbar-btn" onClick={() => editor?.setDevice('desktop')} title="ديسكتوب">
-            🖥️
-          </button>
-          <button className="toolbar-btn" onClick={() => editor?.setDevice('tablet')} title="تابلت">
-            📱
-          </button>
-          <button className="toolbar-btn" onClick={() => editor?.setDevice('mobile')} title="موبايل">
-            📱
-          </button>
-        </div>
-
-        <div className="toolbar-section">
-          <button className="toolbar-btn" onClick={() => editor?.runCommand('preview')} title="معاينة">
-            👁️
-          </button>
-          <button className="toolbar-btn" onClick={() => {
-            const data = editor?.getProjectData();
-            onSave(data);
-            toast.success('تم الحفظ!');
-          }} title="حفظ">
-            💾
-          </button>
-        </div>
-      </div>
-
-      {/* Main Editor */}
-      <div className="editor-main">
-        {/* Left Panel */}
-        <div className="editor-panel editor-panel-left">
-          <div className="panel-header">البلوكات</div>
-          <div id="blocks" className="panel-content"></div>
-        </div>
-
-        {/* Canvas */}
-        <div className="editor-canvas">
-          <div ref={editorRef} id="gjs"></div>
-        </div>
-
-        {/* Right Panel */}
-        <div className="editor-panel editor-panel-right">
-          <div className="panel-tabs">
-            <button className="panel-tab active" onClick={() => {
-              document.getElementById('styles')!.style.display = 'block';
-              document.getElementById('layers')!.style.display = 'none';
-            }}>التصميم</button>
-            <button className="panel-tab" onClick={() => {
-              document.getElementById('styles')!.style.display = 'none';
-              document.getElementById('layers')!.style.display = 'block';
-            }}>الطبقات</button>
+      <div className="puiux-editor">
+        {/* Top Toolbar */}
+        <div className="puiux-toolbar">
+          <div className="toolbar-left">
+            <button className="toolbar-btn" onClick={handleUndo} title="تراجع">
+              <i className="fas fa-undo"></i>
+            </button>
+            <button className="toolbar-btn" onClick={handleRedo} title="إعادة">
+              <i className="fas fa-redo"></i>
+            </button>
+            <button className="toolbar-btn toolbar-btn-danger" onClick={handleClear} title="مسح الكل">
+              <i className="fas fa-trash"></i>
+            </button>
           </div>
-          <div id="styles" className="panel-content"></div>
-          <div id="layers" className="panel-content" style={{ display: 'none' }}></div>
+
+          <div className="toolbar-center">
+            <div className="device-switcher">
+              <button
+                className={`device-btn ${currentDevice === 'desktop' ? 'active' : ''}`}
+                onClick={() => handleDeviceChange('desktop')}
+                title="عرض سطح المكتب"
+              >
+                <i className="fas fa-desktop"></i>
+              </button>
+              <button
+                className={`device-btn ${currentDevice === 'tablet' ? 'active' : ''}`}
+                onClick={() => handleDeviceChange('tablet')}
+                title="عرض الجهاز اللوحي"
+              >
+                <i className="fas fa-tablet-alt"></i>
+              </button>
+              <button
+                className={`device-btn ${currentDevice === 'mobile' ? 'active' : ''}`}
+                onClick={() => handleDeviceChange('mobile')}
+                title="عرض الهاتف"
+              >
+                <i className="fas fa-mobile-alt"></i>
+              </button>
+            </div>
+          </div>
+
+          <div className="toolbar-right">
+            <button className="toolbar-btn" onClick={handlePreview} title="معاينة">
+              <i className="fas fa-eye"></i>
+            </button>
+            <button className="toolbar-btn toolbar-btn-primary" onClick={handleSave} title="حفظ">
+              <i className="fas fa-save"></i>
+              <span>حفظ</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Main Editor */}
+        <div className="puiux-main">
+          {/* Left Sidebar */}
+          <div className="puiux-sidebar puiux-sidebar-left">
+            <div className="sidebar-header">
+              <i className="fas fa-th-large"></i>
+              <span>المكونات</span>
+            </div>
+            <div id="blocks-panel" className="sidebar-content"></div>
+          </div>
+
+          {/* Canvas */}
+          <div className="puiux-canvas">
+            <div ref={editorRef} id="gjs-editor"></div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="puiux-sidebar puiux-sidebar-right">
+            <div className="sidebar-tabs">
+              <button
+                className={`sidebar-tab ${activeTab === 'styles' ? 'active' : ''}`}
+                onClick={() => setActiveTab('styles')}
+              >
+                <i className="fas fa-paint-brush"></i>
+                <span>التصميم</span>
+              </button>
+              <button
+                className={`sidebar-tab ${activeTab === 'layers' ? 'active' : ''}`}
+                onClick={() => setActiveTab('layers')}
+              >
+                <i className="fas fa-layer-group"></i>
+                <span>الطبقات</span>
+              </button>
+            </div>
+            <div className="sidebar-content">
+              <div id="styles-panel" style={{ display: activeTab === 'styles' ? 'block' : 'none' }}></div>
+              <div id="layers-panel" style={{ display: activeTab === 'layers' ? 'block' : 'none' }}></div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
