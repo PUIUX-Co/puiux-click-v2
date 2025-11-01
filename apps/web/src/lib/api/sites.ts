@@ -58,6 +58,7 @@ export interface UpdateSiteDto {
   address?: string;
   colorPalette?: ColorPalette;
   status?: SiteStatus;
+  pages?: any; // GrapesJS pages data (JSON structure)
 }
 
 export interface SiteStats {

@@ -10,7 +10,7 @@ import {
   Param,
 } from '@nestjs/common';
 import { AiService } from './ai.service';
-import { GenerateTextDto, SearchImagesDto, SearchImagesResponseDto } from './dto';
+import { GenerateTextDto, SearchImagesDto, SearchImagesResponseDto, GenerateSectionDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 /**
@@ -103,6 +103,26 @@ export class AiController {
     return {
       success: true,
       message: 'تم تسجيل التحميل بنجاح',
+    };
+  }
+
+  /**
+   * POST /api/ai/generate-section
+   * Generate a complete section (HTML/CSS) that can be added to a page
+   */
+  @Post('generate-section')
+  @HttpCode(HttpStatus.OK)
+  async generateSection(
+    @Body() generateSectionDto: GenerateSectionDto,
+  ): Promise<{
+    success: boolean;
+    data: import('./dto/generate-section.dto').GeneratedSection;
+  }> {
+    const result = await this.aiService.generateSection(generateSectionDto);
+
+    return {
+      success: true,
+      data: result,
     };
   }
 }

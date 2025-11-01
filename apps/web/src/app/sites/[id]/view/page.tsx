@@ -19,18 +19,50 @@ export default function ViewPage({ params }: ViewPageProps) {
 
   useEffect(() => {
     loadSite();
+    
+    // Poll for updates every 5 seconds to refresh preview
+    const interval = setInterval(() => {
+      loadSite(false); // Silent refresh
+    }, 5000);
+    
+    // Also listen for storage events (cross-tab updates)
+    const handleStorageChange = () => {
+      loadSite(false);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom refresh event
+    const handleRefresh = () => {
+      loadSite(false);
+    };
+    
+    window.addEventListener('site:refresh', handleRefresh);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('site:refresh', handleRefresh);
+    };
   }, [params.id]);
 
-  const loadSite = async () => {
+  const loadSite = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       const data = await getSite(params.id);
       setSite(data);
+      setError(false);
     } catch (error) {
       console.error('Failed to load site:', error);
-      setError(true);
+      if (showLoading) {
+        setError(true);
+      }
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
@@ -40,43 +72,74 @@ export default function ViewPage({ params }: ViewPageProps) {
     // If it's a string, return it directly
     if (typeof comp === 'string') return comp;
 
+    // If component type is 'html' and has content, return the content directly
+    if (comp.type === 'html' && comp.content) {
+      return comp.content;
+    }
+
     // If it has direct HTML content as string
     if (typeof comp.components === 'string') {
       return comp.components;
     }
 
+    // If it has content as HTML string
+    if (comp.content && typeof comp.content === 'string' && !Array.isArray(comp.components)) {
+      // Check if content looks like HTML
+      if (comp.content.trim().startsWith('<')) {
+        return comp.content;
+      }
+    }
+
     // Build opening tag
-    const tagName = comp.tagName || 'div';
+    const tagName = comp.tagName || comp.type || 'div';
+    
+    // Skip building tag if it's a text node or special component type
+    if (comp.type === 'textnode' || comp.type === 'text') {
+      return comp.content || '';
+    }
+
     let html = `<${tagName}`;
 
     // Add attributes
     if (comp.attributes) {
       Object.entries(comp.attributes).forEach(([key, value]) => {
-        html += ` ${key}="${value}"`;
+        if (value !== null && value !== undefined) {
+          html += ` ${key}="${String(value).replace(/"/g, '&quot;')}"`;
+        }
       });
     }
 
-    // Add inline styles
-    if (comp.style) {
+    // Add inline styles from comp.style object
+    if (comp.style && typeof comp.style === 'object') {
       const styleStr = Object.entries(comp.style)
-        .map(([key, value]) => `${key}: ${value}`)
+        .map(([key, value]) => {
+          // Convert camelCase to kebab-case
+          const kebabKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+          return `${kebabKey}: ${value}`;
+        })
         .join('; ');
-      html += ` style="${styleStr}"`;
+      if (styleStr) {
+        html += ` style="${styleStr}"`;
+      }
     }
 
     // Add classes
-    if (comp.classes && comp.classes.length > 0) {
+    if (comp.classes && Array.isArray(comp.classes) && comp.classes.length > 0) {
       html += ` class="${comp.classes.join(' ')}"`;
+    } else if (comp.className) {
+      html += ` class="${comp.className}"`;
+    } else if (comp.attributes?.class) {
+      html += ` class="${comp.attributes.class}"`;
     }
 
     html += '>';
 
     // Add content
-    if (comp.content) {
+    if (comp.content && typeof comp.content === 'string') {
       html += comp.content;
     }
 
-    // Add children
+    // Add children components
     if (Array.isArray(comp.components)) {
       comp.components.forEach((child: any) => {
         html += componentToHtml(child);
@@ -90,32 +153,110 @@ export default function ViewPage({ params }: ViewPageProps) {
   };
 
   const renderSite = () => {
-    if (!site?.pages) return null;
+    if (!site?.pages) {
+      console.warn('No pages data found in site:', site);
+      return <div className="p-8 text-center">لا يوجد محتوى</div>;
+    }
 
     const grapesData = site.pages;
-    const firstPage = grapesData.pages?.[0];
+    
+    // Handle both direct pages array and nested structure
+    let pagesArray = grapesData.pages;
+    if (!pagesArray && Array.isArray(grapesData)) {
+      pagesArray = grapesData;
+    }
+    
+    if (!pagesArray || !Array.isArray(pagesArray) || pagesArray.length === 0) {
+      console.warn('No pages found in grapesData:', grapesData);
+      return <div className="p-8 text-center">لا يوجد محتوى</div>;
+    }
+
+    const firstPage = pagesArray[0];
     if (!firstPage) return <div className="p-8 text-center">لا يوجد محتوى</div>;
 
-    const frame = firstPage.frames?.[0];
-    if (!frame) return <div className="p-8 text-center">لا يوجد محتوى</div>;
+    // Handle different page structures
+    let frame = firstPage.frames?.[0];
+    if (!frame && firstPage.component) {
+      // If frame doesn't exist but component does, create a frame structure
+      frame = { component: firstPage.component };
+    }
+    
+    if (!frame) {
+      console.warn('No frame found in first page:', firstPage);
+      return <div className="p-8 text-center">لا يوجد محتوى</div>;
+    }
 
     const component = frame.component;
+    
+    if (!component) {
+      console.warn('No component found in frame:', frame);
+      return <div className="p-8 text-center">لا يوجد محتوى</div>;
+    }
 
     // Build HTML from component tree
     let html = '';
     if (component) {
+      // Handle different component structures
       if (typeof component.components === 'string') {
         // If components is already HTML string
         html = component.components;
       } else if (Array.isArray(component.components)) {
-        // If components is an array of components
+        // If components is an array of components, process each one
         component.components.forEach((comp: any) => {
-          html += componentToHtml(comp);
+          const componentHtml = componentToHtml(comp);
+          if (componentHtml) {
+            html += componentHtml;
+          }
         });
+      } else if (component.components && typeof component.components === 'object') {
+        // If components is an object, try to process it
+        html += componentToHtml(component.components);
+      } else if (component.content && typeof component.content === 'string') {
+        // If component has direct content as HTML
+        if (component.content.trim().startsWith('<')) {
+          html = component.content;
+        } else {
+          // If it's text content, wrap it
+          html = `<div>${component.content}</div>`;
+        }
       } else {
         // Try to convert the component itself
         html = componentToHtml(component);
       }
+    }
+    
+    // If no HTML generated, try to get HTML directly from wrapper
+    if (!html || html.trim().length === 0) {
+      // Try alternative method: get HTML from GrapesJS structure directly
+      try {
+        const wrapper = component;
+        if (wrapper && wrapper.components) {
+          if (typeof wrapper.components === 'string') {
+            html = wrapper.components;
+          } else if (Array.isArray(wrapper.components)) {
+            wrapper.components.forEach((comp: any) => {
+              html += componentToHtml(comp);
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Failed to extract HTML from wrapper:', e);
+      }
+    }
+    
+    // Add debug logging in development
+    if (typeof window !== 'undefined') {
+      console.log('=== Site Rendering Debug ===');
+      console.log('Site ID:', site.id);
+      console.log('Has pages:', !!site.pages);
+      console.log('GrapesData:', grapesData);
+      console.log('Pages array:', pagesArray);
+      console.log('First page:', firstPage);
+      console.log('Frame:', frame);
+      console.log('Component:', component);
+      console.log('Rendered HTML (first 1000 chars):', html.substring(0, 1000));
+      console.log('HTML length:', html.length);
+      console.log('===========================');
     }
 
     // Build CSS

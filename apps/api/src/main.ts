@@ -60,6 +60,28 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   // ============================================================================
+  // Root Route Handler (before global prefix)
+  // ============================================================================
+
+  // Add root route handler BEFORE setting global prefix
+  app.use((req, res, next) => {
+    if (req.url === '/' || req.url === '') {
+      return res.json({
+        name: 'PUIUX Click API',
+        version: '2.0.0',
+        status: 'running',
+        message: 'Welcome to PUIUX Click API',
+        endpoints: {
+          documentation: '/api/docs',
+          health: '/api/health',
+          api: '/api',
+        },
+      });
+    }
+    next();
+  });
+
+  // ============================================================================
   // Global Prefix
   // ============================================================================
 

@@ -21,7 +21,7 @@ import {
   FileText,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { generateText, ContentType } from '@/lib/api/ai';
+import { generateText, ContentType, generateSection, SectionType, type GeneratedSection } from '@/lib/api/ai';
 
 /**
  * AI Content Generator Panel
@@ -35,6 +35,11 @@ interface AIContentGeneratorProps {
     businessName: string;
     industry: string;
     description?: string;
+    colorPalette?: {
+      primary?: string;
+      secondary?: string;
+      accent?: string;
+    };
   };
 }
 
@@ -115,12 +120,188 @@ export default function AIContentGenerator({
   const [context, setContext] = useState('');
   const [maxLength, setMaxLength] = useState(100);
   const [generatedContent, setGeneratedContent] = useState('');
+  const [generatedSection, setGeneratedSection] = useState<GeneratedSection | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const selectedOption = contentTypes.find((ct) => ct.type === selectedType)!;
   const Icon = selectedOption.icon;
+
+  // Check if this content type should generate a full section
+  const shouldGenerateSection = selectedType === ContentType.ABOUT_SECTION;
+
+  // Map ContentType to SectionType for section generation
+  const getSectionType = (contentType: ContentType): SectionType | null => {
+    const mapping: Record<ContentType, SectionType | null> = {
+      [ContentType.ABOUT_SECTION]: SectionType.ABOUT,
+      [ContentType.HERO_TITLE]: SectionType.HERO,
+      [ContentType.HERO_SUBTITLE]: null,
+      [ContentType.SERVICE_DESCRIPTION]: SectionType.SERVICES,
+      [ContentType.PRODUCT_DESCRIPTION]: SectionType.PRODUCTS,
+      [ContentType.TESTIMONIAL]: SectionType.TESTIMONIALS,
+      [ContentType.CTA_TEXT]: null,
+      [ContentType.BLOG_POST]: null,
+      [ContentType.CUSTOM]: null,
+    };
+    return mapping[contentType] || null;
+  };
+
+  const handleInsertSection = (section: GeneratedSection) => {
+    const editor = (window as any).grapesEditorInstance;
+    if (!editor) {
+      toast.error('المحرر غير متاح');
+      return;
+    }
+
+    try {
+      console.log('Adding section to GrapesJS editor:', section);
+      
+      // Get the wrapper component (main page container)
+      const wrapper = editor.getWrapper();
+      if (!wrapper) {
+        toast.error('لا يمكن العثور على المحتوى الرئيسي');
+        return;
+      }
+
+      console.log('Wrapper found, adding section HTML:', section.html.substring(0, 100));
+
+      // Add CSS styles if available
+      if (section.css && section.css.trim()) {
+        // Add CSS to GrapesJS styles
+        const styles = editor.getStyle();
+        const newStyle = {
+          selectors: [],
+          style: section.css,
+          mediaText: '',
+          atRuleType: '',
+        };
+        styles.push(newStyle);
+        editor.setStyle(styles);
+
+        // Also add to canvas document head for preview
+        const canvasDoc = editor.Canvas.getDocument();
+        if (canvasDoc) {
+          let styleElement = canvasDoc.getElementById('generated-section-styles');
+          if (!styleElement) {
+            styleElement = canvasDoc.createElement('style');
+            styleElement.id = 'generated-section-styles';
+            canvasDoc.head.appendChild(styleElement);
+          }
+          // Append new CSS instead of replacing
+          const existingCSS = styleElement.innerHTML || '';
+          styleElement.innerHTML = existingCSS + '\n' + section.css;
+        }
+      }
+
+      // Add HTML section to the page using GrapesJS
+      // Try multiple methods to ensure it works
+      let addedComponents = null;
+      
+      // Method 1: Use addComponents with wrapper as parent
+      try {
+        addedComponents = editor.addComponents(section.html, {
+          at: wrapper,
+        });
+        console.log('Method 1 (addComponents with wrapper):', addedComponents);
+      } catch (error1) {
+        console.warn('Method 1 failed:', error1);
+        try {
+          // Method 2: Use DomComponents.addComponents directly
+          addedComponents = editor.DomComponents.addComponents(section.html, {
+            at: wrapper,
+          });
+          console.log('Method 2 (DomComponents.addComponents with wrapper):', addedComponents);
+        } catch (error2) {
+          console.warn('Method 2 failed:', error2);
+          try {
+            // Method 3: Use wrapper.append directly
+            wrapper.append(section.html);
+            console.log('Method 3 (wrapper.append): Success');
+          } catch (error3) {
+            console.warn('Method 3 failed:', error3);
+            // Method 4: Use addComponents without at option (adds to root)
+            try {
+              addedComponents = editor.addComponents(section.html);
+              console.log('Method 4 (addComponents without at):', addedComponents);
+              // Then move to wrapper if needed
+              if (addedComponents && addedComponents.length > 0) {
+                wrapper.append(addedComponents);
+              }
+            } catch (error4) {
+              console.error('All methods failed:', error4);
+              throw new Error('فشل في إضافة القسم بجميع الطرق');
+            }
+          }
+        }
+      }
+
+      // Ensure the editor updates to show the new components
+      // Refresh the canvas to render the new section
+      editor.refresh();
+
+      // Trigger component update events to ensure auto-save works
+      editor.trigger('component:update');
+      editor.trigger('change');
+      editor.trigger('update'); // This triggers auto-save
+
+      // Force save after adding section to ensure it's persisted
+      setTimeout(() => {
+        try {
+          const pagesData = editor.getProjectData();
+          // Trigger save through the window event system if available
+          const saveEvent = new CustomEvent('grapesjs:save', { detail: pagesData });
+          window.dispatchEvent(saveEvent);
+          
+          // Also trigger the editor's update event manually
+          if (editor.trigger && typeof editor.trigger === 'function') {
+            editor.trigger('update');
+          }
+        } catch (saveError) {
+          console.warn('Failed to trigger save:', saveError);
+        }
+      }, 500);
+
+      // Select the newly added component to make it visible (if available)
+      if (addedComponents && addedComponents.length > 0) {
+        // Wait a bit for the component to be rendered
+        setTimeout(() => {
+          try {
+            editor.select(addedComponents[0]);
+          } catch (selectError) {
+            console.warn('Failed to select component:', selectError);
+          }
+        }, 200);
+      } else {
+        // If no component was returned, try to find it manually
+        setTimeout(() => {
+          const wrapperComponents = wrapper.components();
+          if (wrapperComponents && wrapperComponents.length > 0) {
+            const lastComponent = wrapperComponents[wrapperComponents.length - 1];
+            try {
+              editor.select(lastComponent);
+            } catch (selectError) {
+              console.warn('Failed to select last component:', selectError);
+            }
+          }
+        }, 200);
+      }
+
+      toast.success('تم إضافة القسم إلى الصفحة بنجاح! ✅');
+      
+      // Close panel after a short delay
+      setTimeout(() => {
+        onClose();
+        // Reset form
+        setGeneratedSection(null);
+        setContext('');
+      }, 1500);
+    } catch (error: any) {
+      console.error('Failed to insert section:', error);
+      console.error('Error details:', error.message, error.stack);
+      toast.error(`فشل في إضافة القسم: ${error.message || 'يرجى المحاولة مرة أخرى'}`);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!context.trim()) {
@@ -131,6 +312,7 @@ export default function AIContentGenerator({
     try {
       setIsGenerating(true);
       setGeneratedContent('');
+      setGeneratedSection(null);
 
       // Build context with site data
       let fullContext = context;
@@ -142,15 +324,38 @@ export default function AIContentGenerator({
         fullContext += `السياق: ${context}`;
       }
 
-      const result = await generateText({
-        contentType: selectedType,
-        context: fullContext,
-        tone: selectedTone,
-        maxLength,
-      });
+      // If this should be a full section, generate section instead
+      if (shouldGenerateSection) {
+        const sectionType = getSectionType(selectedType);
+        if (sectionType) {
+          const result = await generateSection({
+            sectionType,
+            context: fullContext,
+            businessName: siteData?.businessName,
+            industry: siteData?.industry,
+            description: siteData?.description || fullContext,
+            colorPalette: siteData?.colorPalette,
+            language: 'ar',
+          });
 
-      setGeneratedContent(result.content);
-      toast.success('تم توليد المحتوى بنجاح! ✨');
+          setGeneratedSection(result);
+          toast.success('تم توليد القسم بنجاح! ✨');
+          
+          // Automatically add section to editor
+          handleInsertSection(result);
+        }
+      } else {
+        // Generate text content
+        const result = await generateText({
+          contentType: selectedType,
+          context: fullContext,
+          tone: selectedTone,
+          maxLength,
+        });
+
+        setGeneratedContent(result.content);
+        toast.success('تم توليد المحتوى بنجاح! ✨');
+      }
     } catch (error: any) {
       console.error('Failed to generate content:', error);
       toast.error(error.response?.data?.message || 'فشل في توليد المحتوى');
@@ -371,7 +576,23 @@ export default function AIContentGenerator({
 
                 {/* Generated Content */}
                 <AnimatePresence>
-                  {generatedContent && (
+                  {generatedSection && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="space-y-3 rounded-xl border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 p-4"
+                    >
+                      <div className="flex items-center gap-2 text-green-700">
+                        <Sparkles className="h-5 w-5" />
+                        <span className="font-semibold">تم توليد القسم بنجاح!</span>
+                      </div>
+                      <div className="rounded-lg bg-white p-4 text-right text-sm leading-relaxed text-gray-800">
+                        <p>تم إضافة القسم إلى صفحتك بنجاح. يمكنك الآن تعديله في المحرر.</p>
+                      </div>
+                    </motion.div>
+                  )}
+                  {generatedContent && !generatedSection && (
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}

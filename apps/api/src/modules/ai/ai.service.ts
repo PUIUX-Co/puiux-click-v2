@@ -12,6 +12,8 @@ import {
   UnsplashImage,
   GenerateInitialSiteDto,
   GeneratedWebsite,
+  GenerateSectionDto,
+  GeneratedSection,
 } from './dto';
 
 /**
@@ -69,9 +71,30 @@ export class AiService {
         provider: dto.provider,
       };
     } catch (error) {
-      this.logger.error('Failed to generate text:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to generate text:', errorMessage);
+      
+      // Provide more specific error messages
+      if (errorMessage.includes('not_found_error') || errorMessage.includes('model:')) {
+        throw new BadRequestException(
+          'اسم الموديل غير صحيح. يرجى التحقق من ANTHROPIC_MODEL في ملف .env. الموديلات المتاحة: claude-sonnet-4-20250514 (موصى به), claude-opus-4-20250514, claude-3-5-sonnet-latest, claude-3-opus-20240229',
+        );
+      }
+      
+      if (errorMessage.includes('temperature') || errorMessage.includes('invalid_request')) {
+        throw new BadRequestException(
+          'خطأ في إعدادات API. يرجى التحقق من إعدادات ANTHROPIC_TEMPERATURE و OPENAI_TEMPERATURE في ملف .env (يجب أن تكون رقم بين 0 و 2)',
+        );
+      }
+      
+      if (errorMessage.includes('API key') || errorMessage.includes('unauthorized')) {
+        throw new BadRequestException(
+          'مفتاح API غير صحيح أو منتهي الصلاحية. يرجى التحقق من مفاتيح API في ملف .env',
+        );
+      }
+      
       throw new BadRequestException(
-        'فشل في توليد النص. يرجى المحاولة مرة أخرى.',
+        `فشل في توليد النص: ${errorMessage}. يرجى المحاولة مرة أخرى.`,
       );
     }
   }
@@ -171,12 +194,65 @@ export class AiService {
       const language = dto.language || 'ar';
       const isRTL = language === 'ar';
 
-      // Build comprehensive prompt for site generation
-      const prompt = this.buildSiteGenerationPrompt(dto, isRTL);
+      // Get sections structure based on industry
+      const sections = this.getSectionsForIndustry(dto.industry, dto.businessName);
 
-      this.logger.log('Generating site with AI...');
+      // 1. Fetch images from Unsplash for each section BEFORE generating with AI
+      this.logger.log('Fetching images from Unsplash for sections...');
+      const sectionImages: Record<string, string> = {};
 
-      // Generate with Claude (preferred for better quality)
+      if (this.unsplashAccessKey) {
+        try {
+          for (const section of sections) {
+            try {
+              const imageResults = await this.suggestImagesForSection(
+                dto.industry,
+                section.type,
+                dto.businessName,
+              );
+
+              if (imageResults.results && imageResults.results.length > 0) {
+                // Use the first image URL (regular size for good quality/performance balance)
+                const selectedImage = imageResults.results[0];
+                sectionImages[section.id] = selectedImage.urls.regular;
+
+                // Trigger download to comply with Unsplash API guidelines
+                if (selectedImage.links.download_location) {
+                  await this.triggerImageDownload(selectedImage.links.download_location);
+                }
+
+                this.logger.log(`Fetched Unsplash image for section: ${section.id}`);
+              } else {
+                // Fallback placeholder if no images found
+                sectionImages[section.id] = `https://placehold.co/1200x600/${dto.colorPalette.primary.replace('#', '')}/ffffff?text=${encodeURIComponent(dto.businessName)}`;
+              }
+            } catch (sectionError) {
+              this.logger.warn(`Failed to fetch image for section ${section.id}:`, sectionError);
+              // Use placeholder if Unsplash fails for this section
+              sectionImages[section.id] = `https://placehold.co/1200x600/${dto.colorPalette.primary.replace('#', '')}/ffffff?text=${encodeURIComponent(dto.businessName)}`;
+            }
+          }
+        } catch (unsplashError) {
+          this.logger.warn('Failed to fetch images from Unsplash, using placeholders:', unsplashError);
+          // Use placeholders for all sections if Unsplash fails
+          sections.forEach(section => {
+            sectionImages[section.id] = `https://placehold.co/1200x600/${dto.colorPalette.primary.replace('#', '')}/ffffff?text=${encodeURIComponent(dto.businessName)}`;
+          });
+        }
+      } else {
+        this.logger.warn('Unsplash API key not configured, using placeholders');
+        // Use placeholders if Unsplash not configured
+        sections.forEach(section => {
+          sectionImages[section.id] = `https://placehold.co/1200x600/${dto.colorPalette.primary.replace('#', '')}/ffffff?text=${encodeURIComponent(dto.businessName)}`;
+        });
+      }
+
+      // 2. Build comprehensive prompt for site generation WITH Unsplash image URLs
+      const prompt = this.buildSiteGenerationPrompt(dto, isRTL, sectionImages);
+
+      this.logger.log('Generating site with AI using Claude/OpenAI and Unsplash images...');
+
+      // 3. Generate with Claude (preferred for better quality) or OpenAI
       const content = this.anthropic
         ? await this.generateWithClaude(prompt, 8000)
         : await this.generateWithOpenAI(prompt, 8000);
@@ -216,13 +292,28 @@ export class AiService {
         throw new Error('Invalid JSON structure from AI response');
       }
 
-      // Get sections structure based on industry
-      const sections = this.getSectionsForIndustry(dto.industry, dto.businessName);
+      // 4. Ensure Unsplash image URLs are used in the generated HTML (replace any remaining placeholders)
+      let finalHtml = generated.html || '';
+      if (sectionImages && Object.keys(sectionImages).length > 0) {
+        // Replace placeholders with actual Unsplash URLs if AI didn't use them
+        // Use a more intelligent replacement strategy - replace each placeholder with its corresponding section image
+        // IMPORTANT: Use replaceAll or regex with global flag to replace ALL occurrences, not just the first one
+        const placeholderPattern = /https:\/\/placehold\.co\/[^"'\)\s]+/gi; // Global flag to replace all occurrences
+        const imageUrls = Object.values(sectionImages);
+        
+        // Replace all placeholders with Unsplash URLs (cycle through available images)
+        let placeholderIndex = 0;
+        finalHtml = finalHtml.replace(placeholderPattern, () => {
+          const imageUrl = imageUrls[placeholderIndex % imageUrls.length];
+          placeholderIndex++;
+          return imageUrl;
+        });
+      }
 
-      this.logger.log('Successfully generated site with AI');
+      this.logger.log('Successfully generated site with AI and Unsplash images');
 
       return {
-        html: generated.html || '',
+        html: finalHtml || generated.html || '',
         css: generated.css || '',
         js: generated.js || '',
         sections,
@@ -235,6 +326,12 @@ export class AiService {
       this.logger.debug('Error stack:', errorStack);
 
       // Provide more specific error messages
+      if (errorMessage.includes('not_found_error') || errorMessage.includes('model:')) {
+        throw new BadRequestException(
+          'اسم الموديل غير صحيح. يرجى التحقق من ANTHROPIC_MODEL في ملف .env. الموديلات المتاحة: claude-sonnet-4-20250514 (موصى به), claude-opus-4-20250514, claude-3-5-sonnet-latest, claude-3-opus-20240229',
+        );
+      }
+      
       if (errorMessage.includes('parse') || errorMessage.includes('JSON')) {
         throw new BadRequestException(
           'فشل في معالجة استجابة الذكاء الاصطناعي. يرجى المحاولة مرة أخرى.',
@@ -244,6 +341,13 @@ export class AiService {
       if (errorMessage.includes('API key') || errorMessage.includes('unauthorized')) {
         throw new BadRequestException(
           'مفتاح API غير صحيح أو منتهي الصلاحية. يرجى التحقق من مفاتيح API في ملف .env',
+        );
+      }
+
+      // Handle temperature/invalid_request errors
+      if (errorMessage.includes('temperature') || errorMessage.includes('invalid_request')) {
+        throw new BadRequestException(
+          'خطأ في إعدادات API. يرجى التحقق من إعدادات ANTHROPIC_TEMPERATURE و OPENAI_TEMPERATURE في ملف .env (يجب أن تكون رقم بين 0 و 2)',
         );
       }
 
@@ -292,11 +396,62 @@ export class AiService {
     return prompt;
   }
 
-  private async generateWithClaude(prompt: string, maxTokens: number): Promise<string> {
+  private async generateWithClaude(prompt: string, maxTokens: number, modelOverride?: string): Promise<string> {
+    // Parse temperature from config - handle all cases (undefined, string, number)
+    const tempValue: string | number | undefined = this.config.get('ANTHROPIC_TEMPERATURE');
+    
+    let temperature: number;
+    if (tempValue === undefined || tempValue === null || tempValue === '') {
+      temperature = 0.7; // Default value
+    } else if (typeof tempValue === 'number') {
+      temperature = tempValue; // Already a number
+    } else if (typeof tempValue === 'string') {
+      const parsed = parseFloat(tempValue);
+      temperature = isNaN(parsed) ? 0.7 : parsed; // Parse string to number
+    } else {
+      temperature = 0.7; // Fallback
+    }
+    
+    // Ensure temperature is a valid number between 0 and 2
+    const validTemperature = temperature < 0 || temperature > 2 ? 0.7 : temperature;
+
+    this.logger.debug(`Using temperature: ${validTemperature} (from config: ${tempValue})`);
+
+    // Define valid Claude model names
+    const validModels = [
+      // Claude 4 models (latest)
+      'claude-sonnet-4-20250514',
+      'claude-opus-4-20250514',
+      'claude-sonnet-4-20250112',
+      'claude-opus-4-20250112',
+      // Claude 3.5 models
+      'claude-3-5-sonnet-20241022',
+      'claude-3-5-sonnet-latest',
+      'claude-3-5-sonnet',
+      // Claude 3 models (legacy)
+      'claude-3-opus-20240229',
+      'claude-3-sonnet-20240229',
+      'claude-3-haiku-20240307',
+    ];
+    
+    // Determine model to use: override > config > default
+    const defaultModel = 'claude-sonnet-4-20250514';
+    const configModel = this.config.get<string>('ANTHROPIC_MODEL') || defaultModel;
+    const requestedModel = modelOverride || configModel;
+    
+    // Validate model name
+    const finalModel = validModels.includes(requestedModel) ? requestedModel : defaultModel;
+    
+    if (finalModel !== requestedModel) {
+      this.logger.warn(`Invalid model name: ${requestedModel}. Using default: ${finalModel}`);
+    }
+    
+    this.logger.debug(`Using Claude model: ${finalModel}`);
+    
     const response = await this.anthropic.messages.create({
-      model: this.config.get<string>('ANTHROPIC_MODEL') || 'claude-3-5-sonnet-20241022',
+      model: finalModel,
       max_tokens: Math.min(maxTokens * 2, 4096), // Approximate tokens from characters
-      temperature: this.config.get<number>('ANTHROPIC_TEMPERATURE') || 0.7,
+      temperature: validTemperature,
       messages: [
         {
           role: 'user',
@@ -314,10 +469,30 @@ export class AiService {
   }
 
   private async generateWithOpenAI(prompt: string, maxTokens: number): Promise<string> {
+    // Parse temperature from config - handle all cases (undefined, string, number)
+    const tempValue: string | number | undefined = this.config.get('OPENAI_TEMPERATURE');
+    
+    let temperature: number;
+    if (tempValue === undefined || tempValue === null || tempValue === '') {
+      temperature = 0.7; // Default value
+    } else if (typeof tempValue === 'number') {
+      temperature = tempValue; // Already a number
+    } else if (typeof tempValue === 'string') {
+      const parsed = parseFloat(tempValue);
+      temperature = isNaN(parsed) ? 0.7 : parsed; // Parse string to number
+    } else {
+      temperature = 0.7; // Fallback
+    }
+    
+    // Ensure temperature is a valid number between 0 and 2
+    const validTemperature = temperature < 0 || temperature > 2 ? 0.7 : temperature;
+
+    this.logger.debug(`Using temperature: ${validTemperature} (from config: ${tempValue})`);
+
     const response = await this.openai.chat.completions.create({
       model: this.config.get<string>('OPENAI_MODEL') || 'gpt-4o',
       max_tokens: Math.min(maxTokens * 2, 4096),
-      temperature: this.config.get<number>('OPENAI_TEMPERATURE') || 0.7,
+      temperature: validTemperature,
       messages: [
         {
           role: 'system',
@@ -409,7 +584,11 @@ export class AiService {
   /**
    * Build comprehensive prompt for initial site generation
    */
-  private buildSiteGenerationPrompt(dto: GenerateInitialSiteDto, isRTL: boolean): string {
+  private buildSiteGenerationPrompt(
+    dto: GenerateInitialSiteDto,
+    isRTL: boolean,
+    sectionImages?: Record<string, string>,
+  ): string {
     const sections = this.getSectionsForIndustry(dto.industry, dto.businessName);
     const sectionsList = sections.map(s => `- ${s.title} (${s.type})`).join('\n');
 
@@ -422,6 +601,22 @@ export class AiService {
 فيسبوك: ${contactInfo.facebook || 'غير متوفر'}
 إنستجرام: ${contactInfo.instagram || 'غير متوفر'}
 `.trim();
+
+    // Build images list for prompt
+    let imagesSection = '';
+    if (sectionImages && Object.keys(sectionImages).length > 0) {
+      imagesSection = '\n\n**الصور من Unsplash (يجب استخدامها بدلاً من placeholders):**\n';
+      sections.forEach(section => {
+        if (sectionImages[section.id]) {
+          imagesSection += `- ${section.title} (${section.id}): ${sectionImages[section.id]}\n`;
+        }
+      });
+      imagesSection += '\n**مهم جداً:** استخدم الصور الفعلية من Unsplash المذكورة أعلاه بدلاً من placeholders.';
+    } else {
+      // Fallback to placeholder if no images
+      const placeholderUrl = `https://placehold.co/1200x600/${dto.colorPalette.primary.replace('#', '')}/ffffff?text=${encodeURIComponent(dto.businessName)}`;
+      imagesSection = `\n\n**للصور:** استخدم placeholder: ${placeholderUrl}`;
+    }
 
     return `أنت خبير تصميم مواقع ويب محترف ومطور Front-End متخصص.
 
@@ -465,8 +660,7 @@ ${sectionsList}
 3. **المحتوى:**
    - ${isRTL ? 'اكتب المحتوى بالعربية الفصحى' : 'Write content in English'}
    - محتوى واقعي وجذاب
-   - استخدم معلومات النشاط المقدمة
-   - أضف placeholders للصور: https://placehold.co/1200x600/${dto.colorPalette.primary.replace('#', '')}/ffffff?text=${dto.businessName}
+   - استخدم معلومات النشاط المقدمة${imagesSection}
 
 4. **JavaScript (اختياري):**
    - أضف تفاعلات بسيطة إذا لزم الأمر
@@ -568,5 +762,221 @@ ${sectionsList}
       STORE: 'متجر إلكتروني',
     };
     return names[industry] || 'نشاط تجاري';
+  }
+
+  /**
+   * Generate a complete section (HTML/CSS) that can be added to an existing site
+   * This creates a professional section compatible with GrapesJS editor
+   */
+  async generateSection(dto: GenerateSectionDto): Promise<GeneratedSection> {
+    // Check if AI generation is enabled
+    const aiGenerationEnabled = 
+      this.config.get<string>('ENABLE_AI_GENERATION') === 'true' ||
+      this.config.get<boolean>('ENABLE_AI_GENERATION') === true;
+    
+    if (!aiGenerationEnabled) {
+      throw new BadRequestException('توليد الأقسام بالذكاء الاصطناعي غير مفعل');
+    }
+
+    if (!this.anthropic && !this.openai) {
+      throw new BadRequestException(
+        'خدمات الذكاء الاصطناعي غير متاحة. يرجى التحقق من ANTHROPIC_API_KEY أو OPENAI_API_KEY في ملف .env',
+      );
+    }
+
+    try {
+      const language = dto.language || 'ar';
+      const isRTL = language === 'ar';
+
+      // Get section image from Unsplash if available
+      let sectionImage: string | undefined;
+      if (this.unsplashAccessKey && dto.industry) {
+        try {
+          const imageResults = await this.suggestImagesForSection(
+            dto.industry,
+            dto.sectionType,
+            dto.context,
+          );
+          if (imageResults.results && imageResults.results.length > 0) {
+            const selectedImage = imageResults.results[0];
+            sectionImage = selectedImage.urls.regular;
+            // Trigger download to comply with Unsplash API guidelines
+            if (selectedImage.links.download_location) {
+              await this.triggerImageDownload(selectedImage.links.download_location);
+            }
+          }
+        } catch (imageError) {
+          this.logger.warn('Failed to fetch section image from Unsplash:', imageError);
+        }
+      }
+
+      // Build section generation prompt
+      const prompt = this.buildSectionPrompt(dto, isRTL, sectionImage);
+
+      // Generate with Claude (preferred) or OpenAI
+      const content = this.anthropic
+        ? await this.generateWithClaude(prompt, 4000)
+        : await this.generateWithOpenAI(prompt, 4000);
+
+      if (!content || content.trim().length === 0) {
+        throw new Error('Empty response from AI service');
+      }
+
+      // Parse the JSON response
+      let generated: any;
+      try {
+        generated = JSON.parse(content);
+      } catch (parseError) {
+        // Try to extract JSON from markdown code blocks
+        const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch && jsonMatch[1]) {
+          generated = JSON.parse(jsonMatch[1].trim());
+        } else {
+          const jsonObjectMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonObjectMatch && jsonObjectMatch[0]) {
+            generated = JSON.parse(jsonObjectMatch[0]);
+          } else {
+            throw new Error('Unable to parse AI response as JSON');
+          }
+        }
+      }
+
+      // Validate parsed JSON structure
+      if (!generated || typeof generated !== 'object') {
+        throw new Error('Invalid JSON structure from AI response');
+      }
+
+      // Generate unique section ID
+      const sectionId = `section-${dto.sectionType}-${Date.now()}`;
+
+      // Ensure image URL is used if provided
+      let finalHtml = generated.html || '';
+      if (sectionImage) {
+        const placeholderPattern = /https:\/\/placehold\.co\/[^"'\)\s]+/gi;
+        finalHtml = finalHtml.replace(placeholderPattern, sectionImage);
+      }
+
+      this.logger.log(`Successfully generated ${dto.sectionType} section`);
+
+      return {
+        html: finalHtml || '',
+        css: generated.css || '',
+        js: generated.js || '',
+        sectionId,
+        sectionType: dto.sectionType,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to generate section:', errorMessage);
+
+      if (errorMessage.includes('not_found_error') || errorMessage.includes('model:')) {
+        throw new BadRequestException(
+          'اسم الموديل غير صحيح. يرجى التحقق من ANTHROPIC_MODEL في ملف .env',
+        );
+      }
+
+      if (errorMessage.includes('parse') || errorMessage.includes('JSON')) {
+        throw new BadRequestException(
+          'فشل في معالجة استجابة الذكاء الاصطناعي. يرجى المحاولة مرة أخرى.',
+        );
+      }
+
+      throw new BadRequestException(
+        `فشل في توليد القسم: ${errorMessage}. يرجى المحاولة مرة أخرى.`,
+      );
+    }
+  }
+
+  /**
+   * Build prompt for section generation
+   */
+  private buildSectionPrompt(
+    dto: GenerateSectionDto,
+    isRTL: boolean,
+    sectionImage?: string,
+  ): string {
+    const sectionNames: Record<string, string> = {
+      about: 'قسم "من نحن"',
+      services: 'قسم "خدماتنا"',
+      products: 'قسم "منتجاتنا"',
+      team: 'قسم "فريق العمل"',
+      testimonials: 'قسم "آراء العملاء"',
+      gallery: 'قسم "معرض الصور"',
+      contact: 'قسم "تواصل معنا"',
+      features: 'قسم "مميزاتنا"',
+      hero: 'قسم "الرئيسي"',
+    };
+
+    const sectionName = sectionNames[dto.sectionType] || 'قسم';
+
+    const colorPalette = dto.colorPalette || {};
+    const colorInfo = `
+نظام الألوان:
+- اللون الأساسي: ${colorPalette.primary || '#3B82F6'}
+- اللون الثانوي: ${colorPalette.secondary || '#10B981'}
+- اللون المميز: ${colorPalette.accent || '#F59E0B'}
+`.trim();
+
+    let imageInfo = '';
+    if (sectionImage) {
+      imageInfo = `\n\n**صورة القسم:** استخدم هذه الصورة: ${sectionImage}`;
+    } else {
+      const placeholderColor = (colorPalette.primary || '#3B82F6').replace('#', '');
+      imageInfo = `\n\n**للصور:** استخدم placeholder: https://placehold.co/1200x600/${placeholderColor}/ffffff?text=${encodeURIComponent(dto.businessName || 'Section')}`;
+    }
+
+    return `أنت خبير تصميم مواقع ويب محترف.
+
+**المهمة:** أنشئ ${sectionName} كامل وجاهز للاستخدام مع HTML/CSS.
+
+**معلومات النشاط:**
+- اسم النشاط: ${dto.businessName || 'غير محدد'}
+- نوع النشاط: ${dto.industry || 'نشاط تجاري'}
+- الوصف: ${dto.description || dto.context}
+- اللغة: ${isRTL ? 'العربية (RTL)' : 'الإنجليزية (LTR)'}
+
+${colorInfo}
+${imageInfo}
+
+**المتطلبات:**
+
+1. **HTML:**
+   - استخدم HTML5 دلالي (semantic)
+   - ${isRTL ? 'أضف dir="rtl" إلى العنصر الرئيسي' : 'أضف dir="ltr" إلى العنصر الرئيسي'}
+   - استخدم Tailwind CSS classes
+   - أضف data-gjs-type="section" للعنصر الرئيسي
+   - أضف id فريد للقسم
+   - استخدم classes مناسبة مثل: container, mx-auto, px-4, py-16, etc.
+
+2. **CSS:**
+   - استخدم نظام الألوان المحدد
+   - تصميم Modern و Professional
+   - Responsive (Mobile-First)
+   - استخدام Flexbox/Grid حسب الحاجة
+   - Smooth transitions و animations حيث مناسب
+   - ${isRTL ? 'دعم RTL كامل' : 'دعم LTR'}
+
+3. **المحتوى:**
+   - ${isRTL ? 'اكتب المحتوى بالعربية الفصحى' : 'Write content in English'}
+   - محتوى واقعي وجذاب بناءً على السياق المقدم
+   - استخدم المعلومات المتاحة عن النشاط
+
+**التنسيق المطلوب:**
+
+أرجع JSON فقط بدون أي نص إضافي:
+
+\`\`\`json
+{
+  "html": "<section id=\\"...\\" data-gjs-type=\\"section\\" class=\\"py-16 bg-...\\" dir=\\"${isRTL ? 'rtl' : 'ltr'}\\">...</section>",
+  "css": "/* Custom CSS if needed */\\n.section-custom { ... }",
+  "js": "// Optional JavaScript"
+}
+\`\`\`
+
+**ملاحظات:**
+- القسم يجب أن يكون كامل و Professional و جاهز للاستخدام
+- التصميم يجب أن يكون مناسب لنوع القسم والنشاط
+- استخدم أفضل الممارسات في UI/UX
+- NO markdown code blocks في الإخراج - JSON فقط!`;
   }
 }

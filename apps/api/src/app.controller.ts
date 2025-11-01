@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { Public } from './modules/auth/decorators/public.decorator';
 
 @ApiTags('health')
-@Controller()
+@Controller() // This controller uses the global prefix 'api'
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
@@ -23,8 +23,12 @@ export class AppController {
       name: 'PUIUX Click API',
       version: '2.0.0',
       status: 'running',
-      documentation: '/api/docs',
-      health: '/api/health',
+      message: 'Welcome to PUIUX Click API',
+      endpoints: {
+        documentation: '/api/docs',
+        health: '/api/health',
+        api: '/api',
+      },
     };
   }
 }

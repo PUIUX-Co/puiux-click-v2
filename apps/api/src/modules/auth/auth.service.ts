@@ -50,12 +50,16 @@ export class AuthService {
     // Create organization and user in a transaction
     const result = await this.prisma.$transaction(async (tx) => {
       // Create organization
+      // In development, allow more sites for testing
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      const defaultMaxSites = isDevelopment ? 10 : 1; // Allow 10 sites in development for testing
+
       const organization = await tx.organization.create({
         data: {
           name: dto.organizationName,
           slug,
           plan: 'FREE',
-          maxSites: 1,
+          maxSites: defaultMaxSites,
           maxStorage: 100,
         },
       });

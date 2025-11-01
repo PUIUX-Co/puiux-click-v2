@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateSiteDto } from './create-site.dto';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, IsObject } from 'class-validator';
 import { SiteStatus } from '@prisma/client';
 
 /**
@@ -11,4 +11,8 @@ export class UpdateSiteDto extends PartialType(CreateSiteDto) {
   @IsEnum(SiteStatus, { message: 'حالة الموقع غير صحيحة' })
   @IsOptional()
   status?: SiteStatus;
+
+  @IsObject()
+  @IsOptional()
+  pages?: any; // GrapesJS pages data (JSON structure)
 }

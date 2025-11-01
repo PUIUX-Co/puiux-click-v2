@@ -121,3 +121,49 @@ export async function suggestImagesForSection(
 export async function triggerImageDownload(downloadLocation: string): Promise<void> {
   await apiClient.post('/ai/trigger-download', { downloadLocation });
 }
+
+// Section Generation Types
+export enum SectionType {
+  ABOUT = 'about',
+  SERVICES = 'services',
+  PRODUCTS = 'products',
+  TEAM = 'team',
+  TESTIMONIALS = 'testimonials',
+  GALLERY = 'gallery',
+  CONTACT = 'contact',
+  FEATURES = 'features',
+  HERO = 'hero',
+}
+
+export interface GenerateSectionDto {
+  sectionType: SectionType;
+  context: string;
+  businessName?: string;
+  industry?: string;
+  description?: string;
+  colorPalette?: {
+    primary?: string;
+    secondary?: string;
+    accent?: string;
+  };
+  language?: string;
+}
+
+export interface GeneratedSection {
+  html: string;
+  css: string;
+  js?: string;
+  sectionId: string;
+  sectionType: SectionType;
+}
+
+/**
+ * Generate a complete section (HTML/CSS) that can be added to a page
+ */
+export async function generateSection(data: GenerateSectionDto): Promise<GeneratedSection> {
+  const response = await apiClient.post<{
+    success: boolean;
+    data: GeneratedSection;
+  }>('/ai/generate-section', data);
+  return response.data.data;
+}

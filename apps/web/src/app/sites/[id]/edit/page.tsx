@@ -66,8 +66,16 @@ export default function EditSitePage() {
 
     try {
       setSaving(true);
-      await updateSite(site.id, { pages });
+      const updatedSite = await updateSite(site.id, { pages });
+      setSite(updatedSite); // Update local state with new data
       toast.success('تم حفظ التغييرات بنجاح');
+      
+      // Trigger refresh event for preview pages
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('site:refresh'));
+        // Also update localStorage to trigger cross-tab updates
+        localStorage.setItem(`site:${site.id}:updated`, Date.now().toString());
+      }
     } catch (error: any) {
       console.error('Failed to save site:', error);
       toast.error(error.response?.data?.message || 'فشل حفظ التغييرات');
@@ -253,6 +261,11 @@ export default function EditSitePage() {
                 businessName: site.businessName,
                 industry: site.industry,
                 description: site.description,
+                colorPalette: site.colorPalette as {
+                  primary?: string;
+                  secondary?: string;
+                  accent?: string;
+                },
               }
             : undefined
         }
